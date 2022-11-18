@@ -45,12 +45,12 @@ void loop() {
   
   if(count == 10)
   {
-  Serial.print("Left\t: ");
+  Serial.print("Right\t: ");
   Serial.print(rightSensor1);
   Serial.print("cm, ");
   Serial.print(rightSensor2);
   
-  Serial.print("\nRight\t: ");
+  Serial.print("\nLeft\t: ");
   Serial.print(leftSensor1);
   Serial.print("cm, ");
   Serial.print(leftSensor2);
@@ -62,8 +62,10 @@ void loop() {
 
   Serial.print("\nBack\t: ");
   Serial.print(backSensor);
-  Serial.println("cm\n********************");
-  Serial.println(millis()-prev);
+  Serial.print("cm\n");
+
+  Serial.println(count); 
+  Serial.println("********************");
   prev = millis();
   count = 0;
   }
