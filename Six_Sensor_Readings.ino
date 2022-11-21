@@ -33,8 +33,7 @@ void setup() {
   Serial.println("with Arduino UNO R3");
 }
 void loop() {
-   
-  //Right
+  
   double rightSensor1 = getDistance(2, 3);
   double frontSensor = getDistance(8,9);
   double rightSensor2 = getDistance(4, 5);
@@ -43,13 +42,13 @@ void loop() {
   double leftSensor2 = getDistance(12, 13);
   count++;
   
-  if(count == 10)
+  if(millis()-prev > 1000)
   {
   Serial.print("Right\t: ");
   Serial.print(rightSensor1);
   Serial.print("cm, ");
   Serial.print(rightSensor2);
-  
+
   Serial.print("\nLeft\t: ");
   Serial.print(leftSensor1);
   Serial.print("cm, ");
@@ -71,6 +70,11 @@ void loop() {
   }
 }
 
+/**
+ * param: trigPin, echoPin
+ * takes about ~1.2 ms when called i.e. each sensor reading is 1.2 ms
+ * returns : distance or -1 if sensor is disconnectd
+ */
 double getDistance(int trigPin, int echoPin){
   double duration, distance;
   digitalWrite(trigPin, LOW);
@@ -79,7 +83,16 @@ double getDistance(int trigPin, int echoPin){
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  if(duration ==0){
+    Serial.print("Sensor Disconnected [Trig, Echo] : ");
+    Serial.print(trigPin);
+    Serial.print(", ");
+    Serial.println(echoPin);
+    return -1;
+  }else{
+    distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  }
+  
   //delay(50);
   return distance;
 }
