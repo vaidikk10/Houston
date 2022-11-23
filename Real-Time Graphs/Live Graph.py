@@ -15,11 +15,6 @@ t = count()
 
 
 def animate(i):
-
-    # df['t'] = df['t'].append(pd.Series([next(t)]))
-    # df['Values'] = df['Values'].append(pd.Series(random.randint(0, 20)))
-    # df['MVA'] = df['Values'].rolling(10).mean();
-    
     i = next(t)
     x.append(i)
     y.append(i*i)
@@ -37,8 +32,6 @@ def animate(i):
     plt.cla()  # clears the values of the graph
     plt.plot(x, y, linestyle='solid', label ='Values')
     plt.plot(x, mva, linestyle='solid', label ='MVA')
-
-    #plt.plot(df['t'], df['MVA'], linestyle='solid', label='MVA')
 
     plt.legend(loc='upper right')
     plt.xlabel('Time (ms)')
