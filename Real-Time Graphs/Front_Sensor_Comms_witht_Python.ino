@@ -36,11 +36,9 @@ void setup() {
 
 void loop() {
   double frontSensor =  getDistance(8, 9);
-  if (millis() - prev > 500)
-  {
 //    avg = frontSensor;
     avg = MVA.getAverage();
-    if(avg <= 20)
+    if(avg <= 6 || frontSensor <= 4)
     {
       Serial.println("Stop");
       stopBot();
@@ -50,12 +48,13 @@ void loop() {
       straight();
       STOP = false;
     }
-     Serial.print(frontSensor);
+    if(millis()-prev> 500){
+           Serial.print(frontSensor);
       Serial.print(",");
-      Serial.println(avg);
+      Serial.println(frontSensor);
     HC06.println(avg);
     prev = millis();
-  }
+    }
   }
 
 double getDistance(int trigPin, int echoPin) {
@@ -80,7 +79,7 @@ double getDistance(int trigPin, int echoPin) {
     MVA.add(distance);
   }
 
-  //delay(50);
+  delay(10);
   return distance;
 }
 
