@@ -1,4 +1,5 @@
 #pragma once
+#include <NewPing.h>
 
 class Sensor
 {
@@ -16,10 +17,14 @@ class Sensor
   double _multiplicationFactor;
 
   public:
-  void Init(int, int, int);
+  Sensor(int, int, int);
+  ~Sensor();
   void add(int);
   double getReading();
+  double getReading2();
   double getAvg();
   boolean isWall();
   double PastEWMA(int);
+
+  NewPing * sonar;  // NewPing library for supposedly better sensor readings (due to some time out issue)
 };

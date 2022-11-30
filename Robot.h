@@ -9,26 +9,23 @@
 class Robot
 {
   private:
-  enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
   Run RUN[3];
   Servo ServoLeft, ServoRight;
   
-  boolean isDeadEnd();
-  boolean isCorner();
-  boolean hasEnteredMaze();
-  boolean isTJunction();
-  boolean isFinished();
-  boolean isParallel();
+
 
   public:
-  Robot(void);
+  enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
+  Robot();
+  ~Robot();
+  
   Sensor
-  SensorLeftFront,
-  SensorLeftBack,
-  SensorRightFront,
-  SensorRightBack,
-  SensorFront,
-  SensorBack;
+  *SensorLeftFront,
+  *SensorLeftBack,
+  *SensorRightFront,
+  *SensorRightBack,
+  *SensorFront,
+  *SensorBack;
 
   void startRun();
   void straight();
@@ -39,5 +36,16 @@ class Robot
   void decideToTurn();
   void decideTJunctionTurn();
   void decideDeadEnd();
+
+// ********** MADE THESE PUBLIC! **********
+  boolean isDeadEnd();
+  boolean isCorner();
+  boolean hasEnteredMaze();
+  boolean isTJunction();
+  boolean isFinished();
+  boolean isParallel();
+
+  // ********** NEWLY ADDED ********** 
+  void makeParallel();
  
 };

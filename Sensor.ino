@@ -1,7 +1,13 @@
 #include "Sensor.h"
 
 
-void Sensor::Init(int trigPin, int echoPin, int EWMA_size)
+Sensor::~Sensor()
+{
+  delete sonar;
+}
+
+
+Sensor::Sensor(int trigPin, int echoPin, int EWMA_size)
 {
   this->trigPin = trigPin;
   this->echoPin = echoPin;
@@ -9,7 +15,18 @@ void Sensor::Init(int trigPin, int echoPin, int EWMA_size)
   pastElements = (double*)malloc(EWMA_size*sizeof(double));
   _arrayCursor = 0;       // index of first element of circular queue of distance data 
   _avgActive = 0;
+  sonar = new NewPing(trigPin, echoPin, 150);          // MAX DISTANCE is final arg
 }
+
+double Sensor::getReading2()
+{
+    Serial.print("Pins [trig, echo] are: ");
+    Serial.print(trigPin);
+    Serial.println(echoPin);
+    delay(500);
+    return sonar->ping_cm();
+}
+
 
 double Sensor::getReading()
 {
@@ -20,13 +37,14 @@ double Sensor::getReading()
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
+  Serial.print(duration);
   if (duration == 0) {
     Serial.print("Sensor Disconnected [Trig, Echo] : ");
     Serial.print(trigPin);
     Serial.print(", ");
     Serial.println(echoPin);
     // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
-    return -1;
+    return -1;  
   } else {
     distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
     if(distance > 150){
@@ -56,7 +74,7 @@ double Sensor::getAvg()  //     *****         https://corporatefinanceinstitute.
 
   movingAvg = 0;
   
-  if (!_avgActive) return 0;    // Not enough values in buffer
+  if (!_avgActive) return 999999;    // Not enough values in buffer -- should only be at start, so returning BIG value works fine
   movingAvg += (_multiplicationFactor * pastElements[_arrayCursor]) + PastEWMA(_arrayCursor - 1);
   
 }

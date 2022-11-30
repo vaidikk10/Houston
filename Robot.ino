@@ -6,6 +6,7 @@
 
 #define ACCEPTABLE_RANGE 10        // arbitrary for now to allow compile
 #define WMA_SIZE 100
+#define SPEED 100
 
 //***************************** SENSOR PINS *****************************
 #define RIGHT_FRONT_TRIG 2
@@ -37,43 +38,55 @@ Robot::Robot()
   }
   
   // ********** Sensor Setup ***********
-  SensorLeftFront.Init(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
-  SensorLeftBack.Init(LEFT_BACK_TRIG, LEFT_BACK_ECHO, WMA_SIZE);
-  SensorRightFront.Init(RIGHT_FRONT_TRIG, RIGHT_FRONT_ECHO, WMA_SIZE);
-  SensorRightBack.Init(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO, WMA_SIZE);
-  SensorFront.Init(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
-  SensorBack.Init(BACK_TRIG, BACK_ECHO, WMA_SIZE);
+  SensorLeftFront  = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
+  SensorLeftBack   = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO, WMA_SIZE);
+  SensorRightFront = new Sensor(RIGHT_FRONT_TRIG, RIGHT_FRONT_ECHO, WMA_SIZE);
+  SensorRightBack  = new Sensor(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO, WMA_SIZE);
+  SensorFront      = new Sensor(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
+  SensorBack       = new Sensor(BACK_TRIG, BACK_ECHO, WMA_SIZE);
+
+  
 
   // ********** Servo Setup **********
   ServoRight.attach(12);
   ServoLeft.attach(13);
+  STATE = START;
+}
+
+Robot::~Robot()
+{
+  delete SensorLeftFront;
+  delete SensorLeftBack;
+  delete SensorRightFront;
+  delete SensorRightBack;
+  delete SensorFront;
+  delete SensorBack;
 }
 
 
 void Robot::straight()
 {
-  if (SensorFront.getReading() < 8)
+  if (SensorFront->getReading() < 8 || SensorFront->getAvg() < 10)
   {
-    
   return;
   }
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
+  ServoLeft.writeMicroseconds(1000 + SPEED);
+  ServoRight.writeMicroseconds(2000 - SPEED);
 }
 
 void Robot::turnLeft()
 {
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(2000 - SPEED);
+  ServoLeft.writeMicroseconds(1000 + SPEED);
+  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 
 void Robot::turnRight()
 {
-  ServoLeft.writeMicroseconds(1000 + SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
+  ServoLeft.writeMicroseconds(2000 - SPEED);
+  ServoRight.writeMicroseconds(2000 - SPEED);
 }
 
 void Robot::stopBot()
@@ -86,13 +99,13 @@ void Robot::reverse()
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1000 + SPEED);
-  ServoRight.writeMicroseconds(2000 - SPEED);
+  ServoLeft.writeMicroseconds(2000 - SPEED);
+  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 boolean Robot::isDeadEnd()
 {
-  if (SensorLeftFront.getReading() < 8 && SensorRightFront.getReading() < 8 && SensorFront.getReading() < 8)
+  if (SensorLeftFront->getReading() < 8 && SensorRightFront->getReading() < 8 && SensorFront->getReading() < 8)
   {
     return true;  
   }
@@ -101,11 +114,11 @@ boolean Robot::isDeadEnd()
 
 boolean Robot::isCorner()
 {
-  if (SensorFront.getReading() < 8 && (SensorLeftFront.getReading() < 8 && SensorRightFront.getReading() > 10))
+  if (SensorFront->getReading() < 8 && (SensorLeftFront->getReading() < 8 && SensorRightFront->getReading() > 10))
   {
     //right turn
     return true;
-  } else if (SensorFront.getReading() < 8 && (SensorRightFront.getReading() < 8 && SensorLeftFront.getReading() > 10))
+  } else if (SensorFront->getReading() < 8 && (SensorRightFront->getReading() < 8 && SensorLeftFront->getReading() > 10))
   {
     //left turn
     return true;
@@ -114,7 +127,7 @@ boolean Robot::isCorner()
 
 boolean Robot::hasEnteredMaze()
 {
-  if (SensorRightFront.getReading() < 8 && SensorLeftFront.getReading() < 8 && STATE == START)
+  if (SensorRightFront->getReading() < 8 && SensorLeftFront->getReading() < 8 && STATE == START)
   {
     STATE = SEARCHING;
     return true;
@@ -124,7 +137,7 @@ boolean Robot::hasEnteredMaze()
 
 boolean Robot::isTJunction()
 {
-  if (SensorRightFront.getReading() > 10 && SensorLeftFront.getReading() > 10 && SensorFront.getReading() < 8)    // Definately could add more cases here *********************************
+  if (SensorRightFront->getReading() > 10 && SensorLeftFront->getReading() > 10 && SensorFront->getReading() < 8)    // Definately could add more cases here *********************************
   {
     return true;
   }
@@ -134,14 +147,42 @@ boolean Robot::isTJunction()
 
 boolean Robot::isParallel()
 {
-  if (SensorRightFront.getReading() - ACCEPTABLE_RANGE < SensorRightBack.getReading() < SensorRightFront.getReading() + ACCEPTABLE_RANGE)    // can make more robust *********************
+  if (SensorRightFront->getReading() - ACCEPTABLE_RANGE < SensorRightBack->getReading() < SensorRightFront->getReading() + ACCEPTABLE_RANGE)    // can make more robust *********************
   {
     return true;
   }
   return false;
 }
 
-boolean Robot::isFinished()
+boolean Robot::isFinished()   // ------------------------------------------------------- DO THIS -------------------------------------------------------
 {
   return true;
+}
+
+void Robot::makeParallel()
+{
+  if (SensorRightFront->getReading() < 15 && SensorRightBack->getReading() < 15)
+  {
+    if (SensorRightFront->getReading() < SensorRightBack->getReading() || SensorRightFront->getAvg() < SensorRightBack->getAvg())          
+    {
+      // Turn slightly left (slow down left servo)
+      ServoLeft.writeMicroseconds(1000 + (SPEED*2)); 
+      delay(10);
+    }else if (SensorRightFront->getReading() > SensorRightBack->getReading() || SensorRightFront->getAvg() > SensorRightBack->getAvg())
+    {
+      ServoRight.writeMicroseconds(2000 - (SPEED*2)); 
+      delay(10);
+    }
+  }else if (SensorLeftFront->getReading() < 15 && SensorLeftBack->getReading() < 15)
+  {
+    if (SensorLeftFront->getReading() < SensorLeftBack->getReading() || SensorLeftFront->getAvg() < SensorLeftBack->getAvg())
+    {
+      ServoRight.writeMicroseconds(2000 - (SPEED*2)); 
+      delay(10);
+    }else if (SensorLeftFront->getReading() > SensorLeftBack->getReading() || SensorLeftFront->getAvg() > SensorLeftBack->getAvg())
+    {
+      ServoLeft.writeMicroseconds(1000 + (SPEED*2)); 
+      delay(10);
+    }
+  }
 }
