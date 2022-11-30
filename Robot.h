@@ -1,4 +1,5 @@
 
+#pragma once
 
 
 #include <Servo.h>
@@ -8,7 +9,7 @@
 class Robot
 {
   private:
-  enum state {START, SEARCHING} STATE;
+  enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
   Run RUN[3];
   Servo ServoLeft, ServoRight;
   
@@ -20,6 +21,7 @@ class Robot
   boolean isParallel();
 
   public:
+  Robot(void);
   Sensor
   SensorLeftFront,
   SensorLeftBack,
@@ -37,6 +39,5 @@ class Robot
   void decideToTurn();
   void decideTJunctionTurn();
   void decideDeadEnd();
-  
-  
+ 
 };

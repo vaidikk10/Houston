@@ -1,6 +1,5 @@
 #pragma once
 
-#include <time.h>
 
 
 class Run
@@ -13,7 +12,7 @@ class Run
   boolean DeadendTurn;
   boolean DidFinish;
   int Points;
-  time_t TimeTaken;
+  unsigned long TimeTaken;
 
   void startTimer(); // returns 0 if error
   void stopTimer();

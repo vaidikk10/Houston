@@ -3,12 +3,12 @@
 
 void Run::startTimer()
 {
-  StartTime = time(0);
+  StartTime = millis();
 }
 
 void Run::stopTimer()
 {
-  long long endTime = time(0);
+  long long endTime = millis();
   TimeTaken = endTime - StartTime;
   StartTime = 0; // reset start time
 }

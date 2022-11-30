@@ -1,12 +1,14 @@
-
-
 #include "Sensor.h"
 
 
-Sensor::Sensor(int trigPin, int echoPin)
+void Sensor::Init(int trigPin, int echoPin, int EWMA_size)
 {
   this->trigPin = trigPin;
   this->echoPin = echoPin;
+  _EWMA_size = EWMA_size;
+  pastElements = (double*)malloc(EWMA_size*sizeof(double));
+  _arrayCursor = 0;       // index of first element of circular queue of distance data 
+  _avgActive = 0;
 }
 
 double Sensor::getReading()
@@ -23,6 +25,7 @@ double Sensor::getReading()
     Serial.print(trigPin);
     Serial.print(", ");
     Serial.println(echoPin);
+    // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
     return -1;
   } else {
     distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
@@ -30,7 +33,40 @@ double Sensor::getReading()
       distance = 150;
     }
   }
+  
+  // add to pastElements (circular FIFO data structure that pops oldest value when array is filled + 1)
+  pastElements[_arrayCursor] = distance;
+  _arrayCursor++;
+  if (_arrayCursor > _EWMA_size-1) 
+  {
+    _arrayCursor = 0;
+    _avgActive = true;
+  }
   delay(10);
   return distance;
 
+}
+
+
+double Sensor::getAvg()  //     *****         https://corporatefinanceinstitute.com/resources/equities/exponentially-weighted-moving-average-ewma/      ******
+{
+  // EMA = NewValue*(2/(_EWMA_size + 1)) + LastSimpleMovingAvg*(1-(2/(_WMA_size + 1));
+  _multiplicationFactor = 0.2;      // range 0-1 the larger the more weighted towards most recent
+  _EWMA = 0; 
+
+  movingAvg = 0;
+  
+  if (!_avgActive) return 0;    // Not enough values in buffer
+  movingAvg += (_multiplicationFactor * pastElements[_arrayCursor]) + PastEWMA(_arrayCursor - 1);
+  
+}
+
+
+double Sensor::PastEWMA(int current)        // recursive
+{ 
+  double prevEWMA = 0;
+  if (current == _EWMA_size - 1) current = 0;   // circle back to start of array
+  if (current == _arrayCursor) return 0;      // END OF RECURSION     (Back to first element)
+  prevEWMA = PastEWMA(--current);
+  return (_multiplicationFactor * pastElements[current]) + ((1 - _multiplicationFactor) * prevEWMA); 
 }

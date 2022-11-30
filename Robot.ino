@@ -1,13 +1,62 @@
 
-#define ACCEPTABLE_RANGE 10
-
 #include "Robot.h"
 #include "Sensor.h"
 #include "Run.h"
 
 
+#define ACCEPTABLE_RANGE 10        // arbitrary for now to allow compile
+#define WMA_SIZE 100
+
+//***************************** SENSOR PINS *****************************
+#define RIGHT_FRONT_TRIG 2
+#define RIGHT_FRONT_ECHO 3
+#define RIGHT_BACK_TRIG 4
+#define RIGHT_BACK_ECHO 5
+#define FRONT_TRIG 6
+#define FRONT_ECHO 7
+#define BACK_TRIG 8
+#define BACK_ECHO 9
+#define LEFT_FRONT_TRIG 10
+#define LEFT_FRONT_ECHO 11
+#define LEFT_BACK_TRIG 12
+#define LEFT_BACK_ECHO 13
+//***********************************************************************
+
+
+Robot::Robot()
+{
+  // ********** Pin Setup ***********
+  for (int i = 2; i <= 13; i++)
+  {
+    if (i % 2)
+    {
+      pinMode(i, OUTPUT);
+      continue;
+    } 
+    pinMode(i, INPUT);
+  }
+  
+  // ********** Sensor Setup ***********
+  SensorLeftFront.Init(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
+  SensorLeftBack.Init(LEFT_BACK_TRIG, LEFT_BACK_ECHO, WMA_SIZE);
+  SensorRightFront.Init(RIGHT_FRONT_TRIG, RIGHT_FRONT_ECHO, WMA_SIZE);
+  SensorRightBack.Init(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO, WMA_SIZE);
+  SensorFront.Init(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
+  SensorBack.Init(BACK_TRIG, BACK_ECHO, WMA_SIZE);
+
+  // ********** Servo Setup **********
+  ServoRight.attach(12);
+  ServoLeft.attach(13);
+}
+
+
 void Robot::straight()
 {
+  if (SensorFront.getReading() < 8)
+  {
+    
+  return;
+  }
   ServoRight.attach(12);
   ServoLeft.attach(13);
   ServoLeft.writeMicroseconds(2000 - SPEED);
@@ -94,5 +143,5 @@ boolean Robot::isParallel()
 
 boolean Robot::isFinished()
 {
-  
+  return true;
 }
