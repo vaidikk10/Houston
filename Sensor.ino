@@ -15,17 +15,25 @@ Sensor::Sensor(int trigPin, int echoPin, int EWMA_size)
   pastElements = (double*)malloc(EWMA_size*sizeof(double));
   _arrayCursor = 0;       // index of first element of circular queue of distance data 
   _avgActive = 0;
-  sonar = new NewPing(trigPin, echoPin, 150);          // MAX DISTANCE is final arg
+  sonar = new NewPing(trigPin, echoPin, 150);          // MAX DISTANCE is final argument
+  Serial.print("Sensor pins: ");
+  Serial.println(trigPin);
 }
 
 double Sensor::getReading2()
 {
-    Serial.print("Pins [trig, echo] are: ");
-    Serial.print(trigPin);
-    Serial.println(echoPin);
-    delay(500);
-    return sonar->ping_cm();
+    double temp = sonar->ping_cm();
+    delay(100);
+    return temp;
 }
+
+void Sensor::getPins()
+{
+  Serial.print(trigPin);
+  Serial.print("\t");
+  Serial.println(echoPin);
+}
+
 
 
 double Sensor::getReading()

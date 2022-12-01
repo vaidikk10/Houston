@@ -27,4 +27,5 @@ class Sensor
   double PastEWMA(int);
 
   NewPing * sonar;  // NewPing library for supposedly better sensor readings (due to some time out issue)
+  void getPins();
 };

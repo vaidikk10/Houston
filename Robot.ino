@@ -5,7 +5,7 @@
 
 
 #define ACCEPTABLE_RANGE 10        // arbitrary for now to allow compile
-#define WMA_SIZE 100
+#define WMA_SIZE 1
 #define SPEED 100
 
 //***************************** SENSOR PINS *****************************
@@ -26,16 +26,7 @@
 
 Robot::Robot()
 {
-  // ********** Pin Setup ***********
-  for (int i = 2; i <= 13; i++)
-  {
-    if (i % 2)
-    {
-      pinMode(i, OUTPUT);
-      continue;
-    } 
-    pinMode(i, INPUT);
-  }
+
   
   // ********** Sensor Setup ***********
   SensorLeftFront  = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
@@ -45,7 +36,8 @@ Robot::Robot()
   SensorFront      = new Sensor(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
   SensorBack       = new Sensor(BACK_TRIG, BACK_ECHO, WMA_SIZE);
 
-  
+  Serial.print("HELLO WORLD");
+  SensorFront->getPins();
 
   // ********** Servo Setup **********
   ServoRight.attach(12);

@@ -21,48 +21,59 @@ int count = 0;
 float avg = 0;
 boolean STOP = false; //False means keep going
 
-enum direct {LEFT, RIGHT} rightOrLeft;
+//enum direct {LEFT, RIGHT} rightOrLeft;
 
-Robot robot;
-Servo ServoLeft;      // 1000 - 1499 to go forward
-Servo ServoRight;     // 1501 - 2000 to go forward
+Robot *robot;
 
 
 void setup() {
+    // ********** Pin Setup ***********
+//  for (int i = 2; i <= 13; i++)
+//  {
+//    if (i % 2)
+//    {
+//      pinMode(i, OUTPUT);
+//      continue;
+//    } 
+//    pinMode(i, INPUT);
+//  }
+pinMode(6,OUTPUT);
+pinMode(7,INPUT);
+  
   HC06.begin(9600); //Baudrate 9600
   Serial.begin(9600);
   prev = millis();   // Time (ms) since arduino started
 //  SPEED = 100;
 
-
-  ServoLeft.attach(12);
-  ServoRight.attach(13);
-
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
+  robot = new Robot();
 }
 
 
 void loop() 
 {
 // Serial.print("Front Sensor Reading: ");
-// Serial. println(robot.SensorFront.getReading());
+// Serial. println(getReading(6,7));
 // Serial.print("robot.STATE: ");
-// Serial.println(robot.STATE);
+// Serial.println(robot->STATE);
  
-  switch (robot.STATE)
+  switch (robot->STATE)
   {
-  case Robot::START:   //  *** OUTSIDE OF MAZE 
-  Serial.print("New distance recieved: ");
-  Serial.println(robot.SensorFront->getReading2());
-//     robot.straight();
+    case Robot::START:   //  *** OUTSIDE OF MAZE 
+      Serial.print("Distance recieved: ");
+      Serial.println(robot->SensorFront->getReading2());
+      Serial.print("Distance striaght from object: ");
+      Serial.println(robot->SensorFront->sonar->ping_cm());
+  
+//     robot->straight();
 //    if (!robot.hasEnteredMaze())
     {
       break;
     }
   case Robot::SEARCHING:
-    if (!robot.isParallel()) robot.makeParallel();
-    robot.straight();
+    if (!robot->isParallel()) robot->makeParallel();
+    robot->straight();
     break;
   case Robot::STOP:
     break;
@@ -82,33 +93,36 @@ void loop()
 
 
 
-//
-//  
-//
-//double getDistance(int trigPin, int echoPin) {
-//  double duration, distance;
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(2);
-//  digitalWrite(trigPin, HIGH);
-//  delayMicroseconds(10);
-//  digitalWrite(trigPin, LOW);
-//  duration = pulseIn(echoPin, HIGH);
-//  if (duration == 0) {
-//    Serial.print("Sensor Disconnected [Trig, Echo] : ");
-//    Serial.print(trigPin);
-//    Serial.print(", ");
-//    Serial.println(echoPin);
-//    return -1;
-//  } else {
-//    distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-//    if(distance >=150){
-//      distance = 150;
-//    }
-//  }
-//
-//  delay(10);
-//  return distance;
-//}
+
+
+
+double getReading(int trigPin, int echoPin)
+{
+  double duration, distance;
+  digitalWrite(trigPin, LOW);   // reset to low position then pulse on to trigger
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  Serial.println(duration);
+  if (duration == 0) {
+    Serial.print("Sensor Disconnected [Trig, Echo] : ");
+    Serial.print(trigPin);
+    Serial.print(", ");
+    Serial.println(echoPin);
+    // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
+    return -1;  
+  } else {
+    distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+    if(distance > 150){
+      distance = 150;
+    }
+    return distance;
+  }
+}
+
+
 //
 //void straight(){
 //  ServoLeft.attach(13);
