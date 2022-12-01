@@ -24,6 +24,11 @@
 //***********************************************************************
 
 
+// ----------- IMPORTANT ------------------
+// WE MIGHT WANT TO SWAP LEFT BACK TRIG AND ECHO PINS BECAUSE ARDUINO DOCUMENTATION
+// STATES PIN 13 IS NOT THE BEST TO WORK WITH AS AN INPUT DUE TO THE LED 
+// https://docs.arduino.cc/learn/microcontrollers/digital-pins
+
 Robot::Robot()
 {
 
