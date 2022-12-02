@@ -3,7 +3,7 @@
 #include "Run.h"
 
 
-#define ACCEPTABLE_RANGE 10        // arbitrary for now to allow compile
+#define ACCEPTABLE_RANGE 0.5        // arbitrary for now to allow compile
 #define WMA_SIZE 1
 #define SPEED 100
 
@@ -73,30 +73,30 @@ void Robot::straight()
 
 void Robot::turnLeft()
 {
-  ServoLeft.writeMicroseconds(1000 + SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
+  ServoLeft.writeMicroseconds(2000 - SPEED);
+  ServoRight.writeMicroseconds(2000 + SPEED);
 }
 
 
 void Robot::turnRight()
 {
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(2000 - SPEED);
+  ServoLeft.writeMicroseconds(1000 + SPEED);
+  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 void Robot::stopBot()
 {
   ServoLeft.detach();
   ServoRight.detach();
-  STATE = START;
+  STATE = SEARCHING;
 }
 
 void Robot::reverse()
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
+  ServoLeft.writeMicroseconds(1000 + SPEED);
+  ServoRight.writeMicroseconds(2000 - SPEED);
 }
 
 boolean Robot::isDeadEnd()
@@ -145,6 +145,7 @@ boolean Robot::isParallel()
 {
   if ((SensorRightFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorRightFront->getReading() + ACCEPTABLE_RANGE))    // can make more robust *********************
   {
+    Serial.println("RIGHT WITHIN RANGE --- isParallel()");
     return true;
   }else if ((SensorLeftFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorLeftFront->getReading() + ACCEPTABLE_RANGE))
   {
@@ -160,6 +161,7 @@ boolean Robot::isFinished()   // -----------------------------------------------
 
 void Robot::makeParallel()  // ------------------------------------------------------- MIGHT NEED TO CHANGE DIRECTIONS -------------------------------------------------------
 {
+  Serial.println("makeParallel()");
   if (SensorRightFront->getReading() < 15 && SensorRightBack->getReading() < 15)           // Use right sensors if in range
   {
     if (SensorRightFront->getReading() < SensorRightBack->getReading() || SensorRightFront->getAvg() < SensorRightBack->getAvg())          

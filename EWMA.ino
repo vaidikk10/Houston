@@ -27,17 +27,13 @@ Robot *robot;
 
 
 void setup() {
-    // ********** Pin Setup ***********                         -------------- DO WE NEED ANY PIN SETUP? (I DONT THINK SO) --------------
-//  for (int i = 2; i <= 13; i++)
-//  {
-//    if (i % 2)
-//    {
-//      pinMode(i, OUTPUT);
-//      continue;
-//    } 
-//    pinMode(i, INPUT);
-//  }
-pinMode(6,OUTPUT);
+
+
+pinMode(2,OUTPUT); //RF
+pinMode(3,INPUT);    
+pinMode(4,OUTPUT);   //RB
+pinMode(5,INPUT);
+pinMode(6,OUTPUT);      //F
 pinMode(7,INPUT);
   
   HC06.begin(9600); //Baudrate 9600
@@ -48,7 +44,6 @@ pinMode(7,INPUT);
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
   robot = new Robot();
-  Serial.println("SETUP DONE");
 }
 
 
@@ -58,10 +53,12 @@ void loop()
   {
     case Robot::START:   //  *** OUTSIDE OF MAZE 
       robot->straight();
+      robot->STATE = Robot::SEARCHING;
       break;
     
   case Robot::SEARCHING:
-    if (!robot->isParallel()) robot->makeParallel();
+//    if (!robot->isParallel()) robot->makeParallel();
+    robot->makeParallel();
     robot->straight();
     break;
   case Robot::STOP:

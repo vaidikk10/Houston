@@ -74,7 +74,9 @@ double Sensor::getReading()
 //    _avgActive = true;
 //  }
   delay(10);
-  Serial.print("Distance: ");
+  Serial.print("Distance [");
+  Serial.print(trigPin);
+  Serial.print("] : ");
   Serial.println(distance);
   return distance;
 
