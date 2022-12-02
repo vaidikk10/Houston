@@ -1,4 +1,3 @@
-
 #include "Robot.h"
 #include "Sensor.h"
 #include "Run.h"
@@ -41,8 +40,6 @@ Robot::Robot()
   SensorFront      = new Sensor(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
   SensorBack       = new Sensor(BACK_TRIG, BACK_ECHO, WMA_SIZE);
 
-  Serial.print("HELLO WORLD");
-  SensorFront->getPins();
 
   // ********** Servo Setup **********
   ServoRight.attach(12);
@@ -63,14 +60,15 @@ Robot::~Robot()
 
 void Robot::straight()
 {
-  if (SensorFront->getReading() < 8 || SensorFront->getAvg() < 10)
+  if (SensorFront->getReading() < 4 || SensorFront->getAvg() < 10)
   {
-  return;
+    stopBot();
+    return;
   }
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1000 + SPEED);
-  ServoRight.writeMicroseconds(2000 - SPEED);
+  ServoLeft.writeMicroseconds(2000 - SPEED);
+  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 void Robot::turnLeft()
@@ -90,6 +88,7 @@ void Robot::stopBot()
 {
   ServoLeft.detach();
   ServoRight.detach();
+  STATE = START;
 }
 
 void Robot::reverse()
@@ -144,7 +143,10 @@ boolean Robot::isTJunction()
 
 boolean Robot::isParallel()
 {
-  if (SensorRightFront->getReading() - ACCEPTABLE_RANGE < SensorRightBack->getReading() < SensorRightFront->getReading() + ACCEPTABLE_RANGE)    // can make more robust *********************
+  if ((SensorRightFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorRightFront->getReading() + ACCEPTABLE_RANGE))    // can make more robust *********************
+  {
+    return true;
+  }else if ((SensorLeftFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorLeftFront->getReading() + ACCEPTABLE_RANGE))
   {
     return true;
   }
@@ -156,9 +158,9 @@ boolean Robot::isFinished()   // -----------------------------------------------
   return true;
 }
 
-void Robot::makeParallel()
+void Robot::makeParallel()  // ------------------------------------------------------- MIGHT NEED TO CHANGE DIRECTIONS -------------------------------------------------------
 {
-  if (SensorRightFront->getReading() < 15 && SensorRightBack->getReading() < 15)
+  if (SensorRightFront->getReading() < 15 && SensorRightBack->getReading() < 15)           // Use right sensors if in range
   {
     if (SensorRightFront->getReading() < SensorRightBack->getReading() || SensorRightFront->getAvg() < SensorRightBack->getAvg())          
     {
@@ -170,7 +172,7 @@ void Robot::makeParallel()
       ServoRight.writeMicroseconds(2000 - (SPEED*2)); 
       delay(10);
     }
-  }else if (SensorLeftFront->getReading() < 15 && SensorLeftBack->getReading() < 15)
+  }else if (SensorLeftFront->getReading() < 15 && SensorLeftBack->getReading() < 15)     // Or use left sensors if in range
   {
     if (SensorLeftFront->getReading() < SensorLeftBack->getReading() || SensorLeftFront->getAvg() < SensorLeftBack->getAvg())
     {

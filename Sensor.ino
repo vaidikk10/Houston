@@ -16,22 +16,28 @@ Sensor::Sensor(int trigPin, int echoPin, int EWMA_size)
   _arrayCursor = 0;       // index of first element of circular queue of distance data 
   _avgActive = 0;
   sonar = new NewPing(trigPin, echoPin, 150);          // MAX DISTANCE is final argument
-  Serial.print("Sensor pins: ");
-  Serial.println(trigPin);
 }
 
 double Sensor::getReading2()
 {
-    double temp = sonar->ping_cm();
-    delay(100);
-    return temp;
-}
+    double duration, distance;
+    if (sonar->ping())
+    {
+      distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+      if(distance > 150)
+      {
+        distance = 150;
+      }
+    return distance;
 
-void Sensor::getPins()
-{
-  Serial.print(trigPin);
-  Serial.print("\t");
-  Serial.println(echoPin);
+    }else
+    {
+    Serial.print("Sensor Disconnected [Trig, Echo] : ");
+    Serial.print(trigPin);
+    Serial.print(", ");
+    Serial.println(echoPin);
+    return -1;  
+    }
 }
 
 
@@ -45,7 +51,6 @@ double Sensor::getReading()
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  Serial.print(duration);
   if (duration == 0) {
     Serial.print("Sensor Disconnected [Trig, Echo] : ");
     Serial.print(trigPin);
@@ -61,14 +66,16 @@ double Sensor::getReading()
   }
   
   // add to pastElements (circular FIFO data structure that pops oldest value when array is filled + 1)
-  pastElements[_arrayCursor] = distance;
-  _arrayCursor++;
-  if (_arrayCursor > _EWMA_size-1) 
-  {
-    _arrayCursor = 0;
-    _avgActive = true;
-  }
+//  pastElements[_arrayCursor] = distance;
+//  _arrayCursor++;
+//  if (_arrayCursor > _EWMA_size-1) 
+//  {
+//    _arrayCursor = 0;
+//    _avgActive = true;
+//  }
   delay(10);
+  Serial.print("Distance: ");
+  Serial.println(distance);
   return distance;
 
 }

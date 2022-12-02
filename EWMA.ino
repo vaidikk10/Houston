@@ -27,7 +27,7 @@ Robot *robot;
 
 
 void setup() {
-    // ********** Pin Setup ***********
+    // ********** Pin Setup ***********                         -------------- DO WE NEED ANY PIN SETUP? (I DONT THINK SO) --------------
 //  for (int i = 2; i <= 13; i++)
 //  {
 //    if (i % 2)
@@ -44,38 +44,28 @@ pinMode(7,INPUT);
   Serial.begin(9600);
   prev = millis();   // Time (ms) since arduino started
 //  SPEED = 100;
-
+  
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
   robot = new Robot();
+  Serial.println("SETUP DONE");
 }
 
 
 void loop() 
 {
-// Serial.print("Front Sensor Reading: ");
-// Serial. println(getReading(6,7));
-// Serial.print("robot.STATE: ");
-// Serial.println(robot->STATE);
- 
   switch (robot->STATE)
   {
     case Robot::START:   //  *** OUTSIDE OF MAZE 
-      Serial.print("Distance recieved: ");
-      Serial.println(robot->SensorFront->getReading2());
-      Serial.print("Distance striaght from object: ");
-      Serial.println(robot->SensorFront->sonar->ping_cm());
-  
-//     robot->straight();
-//    if (!robot.hasEnteredMaze())
-    {
+      robot->straight();
       break;
-    }
+    
   case Robot::SEARCHING:
     if (!robot->isParallel()) robot->makeParallel();
     robot->straight();
     break;
   case Robot::STOP:
+    robot->stopBot();
     break;
   case Robot::AT_CORNER:
     break;
@@ -121,45 +111,3 @@ double getReading(int trigPin, int echoPin)
     return distance;
   }
 }
-
-
-//
-//void straight(){
-//  ServoLeft.attach(13);
-//  ServoRight.attach(12);
-//  ServoLeft.writeMicroseconds(2000 - SPEED);
-//  ServoRight.writeMicroseconds(1000 + SPEED);
-//}
-//
-//void right(){
-//  ServoLeft.attach(12);
-//  ServoRight.attach(13);
-//  ServoLeft.writeMicroseconds(1500 - SPEED);
-//  ServoRight.writeMicroseconds(1500);
-//}
-//
-//void left(){
-//  ServoLeft.attach(13);
-//  ServoRight.attach(12);
-//  ServoLeft.writeMicroseconds(1500);
-//  ServoRight.writeMicroseconds(1500 + SPEED);
-//}
-//
-//void stopBot(){
-//  //ServoLeft.writeMicroseconds(1500);
-//  //ServoRight.writeMicroseconds(1500);
-//    ServoLeft.detach();
-//  ServoRight.detach();
-//}
-//
-//
-//void turnCorner(int direc){
-//  if (direc == LEFT)
-//  {
-//    left();
-//  }
-//  else if (direc == RIGHT)
-//  {
-//    right();
-//  }
-//}
