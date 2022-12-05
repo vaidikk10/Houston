@@ -12,10 +12,12 @@ class Robot
   Run RUN[3];
   Servo ServoLeft, ServoRight;
   
+  
 
 
   public:
   enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
+  enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
   Robot();
   ~Robot();
   
@@ -30,8 +32,8 @@ class Robot
   void startRun();
   void straight();
   void stopBot();
-  void turnLeft();
-  void turnRight();
+  int turnLeft();
+  int turnRight();
   void reverse();
   void decideToTurn();
   void decideTJunctionTurn();
@@ -47,5 +49,6 @@ class Robot
 
   // ********** NEWLY ADDED ********** 
   void makeParallel();
+  void makeCentre();
  
 };

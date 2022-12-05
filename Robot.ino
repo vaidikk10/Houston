@@ -71,17 +71,21 @@ void Robot::straight()
   ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
-void Robot::turnLeft()
+int Robot::turnLeft()                     // could make the returns more robust.
 {
   ServoLeft.writeMicroseconds(2000 - SPEED);
   ServoRight.writeMicroseconds(2000 + SPEED);
+  if (SensorFront->getReading() > 12 && isParallel()) return 1;  // return 1 when complete
+  return 0;       // when not complete
 }
 
 
-void Robot::turnRight()
+int Robot::turnRight()
 {
   ServoLeft.writeMicroseconds(1000 + SPEED);
   ServoRight.writeMicroseconds(1000 + SPEED);
+  if (SensorFront->getReading() > 12 && isParallel()) return 1;
+  return 0;
 }
 
 void Robot::stopBot()
@@ -113,19 +117,21 @@ boolean Robot::isCorner()
   if (SensorFront->getReading() < 8 && (SensorLeftFront->getReading() < 8 && SensorRightFront->getReading() > 10))
   {
     //right turn
+    CORNER_DIRECTION = RIGHT;
     return true;
   } else if (SensorFront->getReading() < 8 && (SensorRightFront->getReading() < 8 && SensorLeftFront->getReading() > 10))
   {
     //left turn
+    CORNER_DIRECTION = LEFT;
     return true;
   }
+  return false;
 }
 
 boolean Robot::hasEnteredMaze()
 {
   if (SensorRightFront->getReading() < 8 && SensorLeftFront->getReading() < 8 && STATE == START)
   {
-    STATE = SEARCHING;
     return true;
   }
   return false;
@@ -143,11 +149,10 @@ boolean Robot::isTJunction()
 
 boolean Robot::isParallel()
 {
-  if ((SensorRightFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorRightFront->getReading() + ACCEPTABLE_RANGE))    // can make more robust *********************
+  if ((SensorRightFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() && SensorRightBack->getReading() < (SensorRightFront->getReading() + ACCEPTABLE_RANGE))    // can make more robust *********************
   {
-    Serial.println("RIGHT WITHIN RANGE --- isParallel()");
     return true;
-  }else if ((SensorLeftFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() < (SensorLeftFront->getReading() + ACCEPTABLE_RANGE))
+  }else if ((SensorLeftFront->getReading() - ACCEPTABLE_RANGE) < SensorRightBack->getReading() && SensorRightBack->getReading() < (SensorLeftFront->getReading() + ACCEPTABLE_RANGE))
   {
     return true;
   }
@@ -159,9 +164,8 @@ boolean Robot::isFinished()   // -----------------------------------------------
   return true;
 }
 
-void Robot::makeParallel()  // ------------------------------------------------------- MIGHT NEED TO CHANGE DIRECTIONS -------------------------------------------------------
+void Robot::makeParallel()  
 {
-  Serial.println("makeParallel()");
   if (SensorRightFront->getReading() < 15 && SensorRightBack->getReading() < 15)           // Use right sensors if in range
   {
     if (SensorRightFront->getReading() < SensorRightBack->getReading() || SensorRightFront->getAvg() < SensorRightBack->getAvg())          
@@ -186,4 +190,19 @@ void Robot::makeParallel()  // -------------------------------------------------
       delay(10);
     }
   }
+}
+
+
+void Robot::makeCentre()
+{
+  if (SensorRightFront->getReading() > SensorLeftFront->getReading() && SensorRightBack->getReading() > SensorLeftBack->getReading())
+  {
+    ServoRight.writeMicroseconds(2000 - (SPEED*2));
+    delay(20);
+  }else if (SensorRightFront->getReading() > SensorLeftFront->getReading() && SensorRightBack->getReading() > SensorLeftBack->getReading())
+  {
+    ServoLeft.writeMicroseconds(1000 + (SPEED*2)); 
+    delay(20);
+  }
+  makeParallel();     // Should this be called here?
 }

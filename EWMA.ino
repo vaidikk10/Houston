@@ -41,9 +41,9 @@ pinMode(7,INPUT);
   prev = millis();   // Time (ms) since arduino started
 //  SPEED = 100;
   
-  Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
-  Serial.println("with Arduino UNO R3");
+  Serial.println("SERIAL HAS BEGUN\n"); // print some text in Serial Monitor
   robot = new Robot();
+  while(1) robot->isParallel();
 }
 
 
@@ -51,60 +51,56 @@ void loop()
 {
   switch (robot->STATE)
   {
-    case Robot::START:   //  *** OUTSIDE OF MAZE 
+    case Robot::START:   //  *** OUTSIDE OF MAZE ***
       robot->straight();
+      if (robot->hasEnteredMaze())
       robot->STATE = Robot::SEARCHING;
       break;
     
-  case Robot::SEARCHING:
-//    if (!robot->isParallel()) robot->makeParallel();
-    robot->makeParallel();
-    robot->straight();
-    break;
-  case Robot::STOP:
-    robot->stopBot();
-    break;
-  case Robot::AT_CORNER:
-    break;
-  case Robot::AT_TJUNCTION:
-    break;
-  case Robot::AT_DEADEND:
-    break;
-  case Robot::REVERSING:
-    break;
-  default:
-    break;
+    case Robot::SEARCHING:
+      robot->makeCentre();
+      robot->straight();
+      if (robot->isCorner())
+      { robot->STATE = Robot::AT_CORNER; }
+      else if (robot->isTJunction())
+      { robot->STATE = Robot::AT_TJUNCTION; }
+      else if (robot->isDeadEnd())
+      { robot->STATE = Robot::AT_DEADEND; }
+      break;
+      
+    case Robot::STOP:
+      robot->stopBot();
+      break;
+      
+    case Robot::AT_CORNER:
+      if (robot->CORNER_DIRECTION == Robot::LEFT)
+      { 
+        if ( robot->turnLeft() )
+        {
+          robot->STATE = Robot::SEARCHING;
+          robot->straight();
+        }
+      }
+      else if (robot->CORNER_DIRECTION == Robot::RIGHT)
+      {
+        if ( robot->turnRight() )
+        {
+          robot->STATE = Robot::SEARCHING;
+          robot->straight();
+        }
+      }
+      break;
+      
+    case Robot::AT_TJUNCTION:
+      break;
+      
+    case Robot::AT_DEADEND:
+      break;
+      
+    case Robot::REVERSING:      // maybe count turns after wrong turn until deaedend, so we know when were back to T Junction
+      break;
+      
+    default:
+      break;
   } 
-}
-
-
-
-
-
-
-
-double getReading(int trigPin, int echoPin)
-{
-  double duration, distance;
-  digitalWrite(trigPin, LOW);   // reset to low position then pulse on to trigger
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  Serial.println(duration);
-  if (duration == 0) {
-    Serial.print("Sensor Disconnected [Trig, Echo] : ");
-    Serial.print(trigPin);
-    Serial.print(", ");
-    Serial.println(echoPin);
-    // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
-    return -1;  
-  } else {
-    distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-    if(distance > 150){
-      distance = 150;
-    }
-    return distance;
-  }
 }
