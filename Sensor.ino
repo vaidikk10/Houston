@@ -51,14 +51,17 @@ double Sensor::getReading()
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  if (duration == 0) {
+  if (duration == 0) 
+  {
     Serial.print("Sensor Disconnected [Trig, Echo] : ");
     Serial.print(trigPin);
     Serial.print(", ");
     Serial.println(echoPin);
     // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
-    return -1;  
-  } else {
+    if (trigPin == FRONT_TRIG) return 0;  // to make sure the bot will stop!
+    return 150;  
+  } else 
+  {
     distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
     if(distance > 150){
       distance = 150;
@@ -74,6 +77,11 @@ double Sensor::getReading()
 //    _avgActive = true;
 //  }
   delay(10);
+  if (trigPin == 200){
+  Serial.print("Sensor: ");
+  Serial.print(trigPin);
+  Serial.print(" is: ");
+  Serial.println(distance); }
   return distance;
 
 }

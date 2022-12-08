@@ -35,6 +35,11 @@ pinMode(4,OUTPUT);   //RB
 pinMode(5,INPUT);
 pinMode(6,OUTPUT);      //F
 pinMode(7,INPUT);
+pinMode(10,OUTPUT);      //LF
+pinMode(11,INPUT);
+pinMode(A0,OUTPUT);      //LB
+pinMode(A1,INPUT);
+
   
   HC06.begin(9600); //Baudrate 9600
   Serial.begin(9600);
@@ -43,7 +48,6 @@ pinMode(7,INPUT);
   
   Serial.println("SERIAL HAS BEGUN\n"); // print some text in Serial Monitor
   robot = new Robot();
-  while(1) robot->isParallel();
 }
 
 
@@ -59,7 +63,10 @@ void loop()
     
     case Robot::SEARCHING:
       robot->makeCentre();
-      robot->straight();
+       delay(50);
+       robot->makeParallel();
+       delay(50);
+       robot->straight();
       if (robot->isCorner())
       { robot->STATE = Robot::AT_CORNER; }
       else if (robot->isTJunction())
@@ -70,11 +77,14 @@ void loop()
       
     case Robot::STOP:
       robot->stopBot();
+      robot->straight();
       break;
       
     case Robot::AT_CORNER:
       if (robot->CORNER_DIRECTION == Robot::LEFT)
       { 
+        robot->turnLeft();
+        delay(200);
         if ( robot->turnLeft() )
         {
           robot->STATE = Robot::SEARCHING;
@@ -83,6 +93,8 @@ void loop()
       }
       else if (robot->CORNER_DIRECTION == Robot::RIGHT)
       {
+        robot->turnRight();
+        delay(200);
         if ( robot->turnRight() )
         {
           robot->STATE = Robot::SEARCHING;
@@ -92,9 +104,11 @@ void loop()
       break;
       
     case Robot::AT_TJUNCTION:
+      robot->stopBot();
       break;
       
     case Robot::AT_DEADEND:
+      robot->stopBot();
       break;
       
     case Robot::REVERSING:      // maybe count turns after wrong turn until deaedend, so we know when were back to T Junction
@@ -103,4 +117,26 @@ void loop()
     default:
       break;
   } 
+}
+
+double getDistance(int trigPin, int echoPin){
+  double duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  if(duration ==0){
+    Serial.print("Sensor Disconnected [Trig, Echo] : ");
+    Serial.print(trigPin);
+    Serial.print(", ");
+    Serial.println(echoPin);
+    return -1;
+  }else{
+    distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  }
+  
+  delay(500);
+  return distance;
 }
