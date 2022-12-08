@@ -29,6 +29,14 @@ class Robot
   *SensorFront,
   *SensorBack;
 
+  double
+  LeftFrontReading,
+  LeftBackReading,
+  RightFrontReading,
+  RightBackReading,
+  FrontReading,
+  BackReading;
+
   void startRun();
   void straight();
   void stopBot();
@@ -50,5 +58,6 @@ class Robot
   // ********** NEWLY ADDED ********** 
   void makeParallel();
   void makeCentre();
+  void readSensors();
  
 };

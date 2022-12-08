@@ -53,6 +53,7 @@ pinMode(A1,INPUT);
 
 void loop() 
 {
+  robot->readSensors();
   switch (robot->STATE)
   {
     case Robot::START:   //  *** OUTSIDE OF MAZE ***
@@ -62,19 +63,23 @@ void loop()
       break;
     
     case Robot::SEARCHING:
-      robot->makeCentre();
-       delay(50);
-       robot->makeParallel();
-       delay(50);
        robot->straight();
+//       robot->makeCentre();
+//       delay(20);
+       robot->makeParallel();
+       delay(25);
+       robot->straight();
+       if (robot->SensorFront->getReading() < 10) 
+       {
       if (robot->isCorner())
       { robot->STATE = Robot::AT_CORNER; }
       else if (robot->isTJunction())
       { robot->STATE = Robot::AT_TJUNCTION; }
       else if (robot->isDeadEnd())
       { robot->STATE = Robot::AT_DEADEND; }
+       }
       break;
-      
+       
     case Robot::STOP:
       robot->stopBot();
       robot->straight();
@@ -84,21 +89,33 @@ void loop()
       if (robot->CORNER_DIRECTION == Robot::LEFT)
       { 
         robot->turnLeft();
-        delay(200);
-        if ( robot->turnLeft() )
+        delay(1000);
+        robot->STATE = Robot::SEARCHING;
+        break;
+        while (1)
         {
-          robot->STATE = Robot::SEARCHING;
-          robot->straight();
+          if ( robot->turnLeft() )
+          {
+            robot->STATE = Robot::SEARCHING;
+            robot->straight();
+            break;
+          }
         }
       }
       else if (robot->CORNER_DIRECTION == Robot::RIGHT)
       {
         robot->turnRight();
-        delay(200);
-        if ( robot->turnRight() )
+        delay(1000);
+        robot->STATE = Robot::SEARCHING;
+        break;
+        while (1)
         {
-          robot->STATE = Robot::SEARCHING;
-          robot->straight();
+          if ( robot->turnRight() )
+          {
+            robot->STATE = Robot::SEARCHING;
+            robot->straight();
+            break;
+          }
         }
       }
       break;
@@ -140,3 +157,19 @@ double getDistance(int trigPin, int echoPin){
   delay(500);
   return distance;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------------------- TEST WITH NEW SENSOR READ ROBOT METHOD ----------------------------

@@ -77,11 +77,16 @@ double Sensor::getReading()
 //    _avgActive = true;
 //  }
   delay(10);
-  if (trigPin == 200){
+  if (trigPin == 6){
+    if(distance > 10)
+    {
+      
   Serial.print("Sensor: ");
   Serial.print(trigPin);
   Serial.print(" is: ");
-  Serial.println(distance); }
+  Serial.println(distance);
+    }
+    }
   return distance;
 
 }
