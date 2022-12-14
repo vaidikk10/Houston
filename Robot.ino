@@ -8,9 +8,10 @@
 #define SPEED 100
 #define SLOW_SPEED 450
 #define FRONT_STOPPING_DISTANCE 8
+#define TURNING_SPEED 460
 
 //***************************** SENSOR PINS *****************************
-#define RIGHT_FRONT_TRIG 2
+#define RIGHT_FRONT_TRIG 2                   // THIS NEEDS TO BE THE INTERRUPT PIN, SO MAYBE CHANGE TO A2, A3??
 #define RIGHT_FRONT_ECHO 3
 #define RIGHT_BACK_TRIG 4
 #define RIGHT_BACK_ECHO 5
@@ -33,6 +34,7 @@
 Robot::Robot()
 {
 
+//  currentRun = individualRun[0];
   
   // ********** Sensor Setup ***********
   SensorLeftFront  = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
@@ -87,8 +89,8 @@ void Robot::turnLeft()
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1460);    //1460
-  ServoRight.writeMicroseconds(1460); 
+  ServoLeft.writeMicroseconds(1000 + TURNING_SPEED);    //1460
+  ServoRight.writeMicroseconds(1000 + TURNING_SPEED); 
 }
 
 
@@ -96,8 +98,8 @@ void Robot::turnRight()
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1540); 
-  ServoRight.writeMicroseconds(1540);     //1540
+  ServoLeft.writeMicroseconds(2000 - TURNING_SPEED); 
+  ServoRight.writeMicroseconds(2000 - TURNING_SPEED);     //1540
 }
 
 void Robot::stopBot()
@@ -106,7 +108,7 @@ void Robot::stopBot()
   ServoRight.writeMicroseconds(1500);
   ServoLeft.detach();
   ServoRight.detach();
-  STATE = SEARCHING;
+  STATE = SEARCHING;    // Could lead to circular loop if not careful - probably change this
 }
 
 void Robot::reverse()
@@ -161,7 +163,7 @@ boolean Robot::isTJunction()
 }
 
 
-boolean Robot::isParallel(enum Direction way)    // USES SENSOR POLLING!!!       ---------- SLOW ---------- ONLY USE IN LOOPS IN LOOP()
+boolean Robot::isParallel(enum Direction way)    // POLLS A FEW SENSORS SO QUITE SLOW!
 {
   double front, back;
   if (way == LEFT)
@@ -169,7 +171,7 @@ boolean Robot::isParallel(enum Direction way)    // USES SENSOR POLLING!!!      
     front = SensorRightFront->getReading();
     back = SensorRightBack->getReading();
     if (front > 20 || back > 20) { return false; }
-    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE))    // can make more robust *********************
+    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE)
     {
       return true;
     }
@@ -187,7 +189,8 @@ boolean Robot::isParallel(enum Direction way)    // USES SENSOR POLLING!!!      
 }
 
 boolean Robot::isFinished()   // ------------------------------------------------------- DO THIS -------------------------------------------------------
-{
+{                             // BUTTONS COULD ASSIST WITH THIS.  ----- CHECK FLAG SET BY BUTTON INTERRUPT ----- 
+                              // THIS INTERRUPT COULD BE IN RUN (IT NEEDS TO BE A STATIC CLASS METHOD) STATIC TO ALLOW IT TO EXIST WITHOUT AN INSTANCE
   return false;  // idk...
 }
 
@@ -247,7 +250,6 @@ void Robot::makeCentre()
     stopBot();
     return;
   }
-//  Serial.println("Centring");
   if ( RightFrontReading > 16 || LeftFrontReading > 16 ) { return; }   // Dont centre if approaching corner
   
   if (RightFrontReading > LeftFrontReading && RightBackReading > LeftBackReading)
@@ -263,4 +265,14 @@ void Robot::makeCentre()
     straight();
   }
   delay(10);
+}
+
+
+void Robot::ButtonPressed_EXTI0_Handler()
+{
+  if ( buttonPressed ) 
+    {
+      buttonPressed = false;
+      this->currentRun++;      // Could maybe add in end current run and start next run (seperately) functionality.
+    }
 }

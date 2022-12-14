@@ -20,6 +20,7 @@ class Robot
   struct  
   {
     Run individualRun[3];
+//    Run * currentRun;
     int currentRun = 0;
     int fastestRun = 0;   // fastest run is first (right turn) by default
   } Runs;
@@ -66,5 +67,5 @@ class Robot
   void makeParallel();
   void makeCentre();
   void readSensors();
- 
+  void ButtonPressed_EXTI0_Handler();
 };

@@ -12,3 +12,9 @@ void Run::stopTimer()
   TimeTaken = endTime - StartTime;
   StartTime = 0; // reset start time
 }
+
+// NOT IN CLASS
+void ButtonPressed_EXTI0()
+{
+  buttonPressed = true;
+}

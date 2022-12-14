@@ -18,3 +18,8 @@ class Run
   void stopTimer();
   int calculatePoints();
 };
+
+
+// NOT IN CLASS 
+void ButtonPressed_EXTI0(void);  // Pin 2 for external interrupt 0
+volatile boolean buttonPressed; // make sure this initializes as false

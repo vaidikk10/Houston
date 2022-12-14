@@ -17,8 +17,6 @@ SoftwareSerial HC06(12, 13); //HC06-TX Pin 10, HC06-RX to Arduino Pin 11
 
 //unsigned long prev;
 
-//enum direct {LEFT, RIGHT} rightOrLeft;
-
 Robot *robot;
 
 
@@ -42,6 +40,7 @@ pinMode(A1,INPUT);
 //  prev = millis();   // Time (ms) since arduino started
   
   Serial.println("SERIAL HAS BEGUN\n"); // print some text in Serial Monitor
+//  attachInterrupt(digitalPinToInterrupt(2), ButtonPressed_EXTI0, FALLING);      // Declare ButtonPressed_EXTI0 as ISR on pin 2
   robot = new Robot();    // call constructor on robot
 }
 
@@ -49,6 +48,7 @@ pinMode(A1,INPUT);
 
 void loop() 
 {
+  // check if interrupt here...          (Maybe also check inside while(1) loops)
   robot->readSensors();
   switch (robot->STATE)
   {
@@ -85,7 +85,7 @@ void loop()
         delay(100);
         while (1)
         {
-          if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT)) break;     // 2 in a row needed.
+          if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT)) break;     // 2 in a row needed. (end infinite loop when parallel)
         }
         robot->STATE = Robot::SEARCHING;
         robot->straight();
@@ -133,6 +133,3 @@ void loop()
   } 
 }
   
-
-
-// ---------------------------- TEST WITH NEW SENSOR READ ROBOT METHOD ----------------------------

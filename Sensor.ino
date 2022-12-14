@@ -77,7 +77,7 @@ double Sensor::getReading()
 //    _avgActive = true;
 //  }
   delay(2);
-  if (trigPin == 10 || trigPin == 14)
+  if (trigPin == 100 || trigPin == 140)
     {
 //    //if(distance > 10)
 //    {
@@ -106,7 +106,7 @@ double Sensor::getAvg()  //     *****         https://corporatefinanceinstitute.
 }
 
 
-double Sensor::PastEWMA(int current)        // recursive
+double Sensor::PastEWMA(int current)        // recursive      -- I DONT THINK WE NEED AN AVERAGE ANYMORE...
 { 
   double prevEWMA = 0;
   if (current == _EWMA_size - 1) current = 0;   // circle back to start of array
