@@ -9,13 +9,20 @@
 class Robot
 {
   private:
-  Run RUN[3];
+
+  
   Servo ServoLeft, ServoRight;
   
   
 
 
   public:
+  struct  
+  {
+    Run individualRun[3];
+    int currentRun = 0;
+    int fastestRun = 0;   // fastest run is first (right turn) by default
+  } Runs;
   enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
   enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
   Robot();
@@ -40,8 +47,8 @@ class Robot
   void startRun();
   void straight();
   void stopBot();
-  int turnLeft();
-  int turnRight();
+  void turnLeft();
+  void turnRight();
   void reverse();
   void decideToTurn();
   void decideTJunctionTurn();
@@ -53,7 +60,7 @@ class Robot
   boolean hasEnteredMaze();
   boolean isTJunction();
   boolean isFinished();
-  boolean isParallel();
+  boolean isParallel(enum Direction);
 
   // ********** NEWLY ADDED ********** 
   void makeParallel();

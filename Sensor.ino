@@ -14,7 +14,7 @@ Sensor::Sensor(int trigPin, int echoPin, int EWMA_size)
   _EWMA_size = EWMA_size;
   pastElements = (double*)malloc(EWMA_size*sizeof(double));
   _arrayCursor = 0;       // index of first element of circular queue of distance data 
-  _avgActive = 0;
+  _avgActive = false;
   sonar = new NewPing(trigPin, echoPin, 150);          // MAX DISTANCE is final argument
 }
 
@@ -50,7 +50,7 @@ double Sensor::getReading()
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
+  duration = pulseIn(echoPin, HIGH, 100000);     // Time out at 100 ms, this will return 0
   if (duration == 0) 
   {
     Serial.print("Sensor Disconnected [Trig, Echo] : ");
@@ -76,17 +76,17 @@ double Sensor::getReading()
 //    _arrayCursor = 0;
 //    _avgActive = true;
 //  }
-  delay(10);
-  if (trigPin == 6){
-    if(distance > 10)
+  delay(2);
+  if (trigPin == 10 || trigPin == 14)
     {
-      
-  Serial.print("Sensor: ");
-  Serial.print(trigPin);
-  Serial.print(" is: ");
-  Serial.println(distance);
-    }
-    }
+//    //if(distance > 10)
+//    {
+      Serial.print("Sensor: ");
+      Serial.print(trigPin);
+      Serial.print(" is: ");
+      Serial.println(distance);
+//    }
+  }
   return distance;
 
 }
