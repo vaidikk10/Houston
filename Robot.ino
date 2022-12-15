@@ -3,11 +3,12 @@
 #include "Run.h"
 
 
-#define ACCEPTABLE_RANGE 0.6        
+// It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
+#define ACCEPTABLE_RANGE 0.75
 #define WMA_SIZE 1
-#define SPEED 100
+#define SPEED 100          // Pretty much max speed
 #define SLOW_SPEED 450
-#define FRONT_STOPPING_DISTANCE 8
+#define FRONT_STOPPING_DISTANCE 7.5
 #define TURNING_SPEED 460
 
 //***************************** SENSOR PINS *****************************
@@ -121,7 +122,7 @@ void Robot::reverse()
 
 boolean Robot::isDeadEnd()
 {
-  if (LeftFrontReading < 8 && RightFrontReading < 8 && SensorFront->getReading() < FRONT_STOPPING_DISTANCE)
+  if (LeftFrontReading < 10 && RightFrontReading < 10 && SensorFront->getReading() < FRONT_STOPPING_DISTANCE)
   {
     return true;  
   }
@@ -130,12 +131,12 @@ boolean Robot::isDeadEnd()
 
 boolean Robot::isCorner()
 {
-  if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE+1) && (LeftFrontReading < 10 && RightFrontReading > 14) )
+  if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (LeftFrontReading < 12 && RightFrontReading > 15) )
   {
     //right turn
     CORNER_DIRECTION = RIGHT;
     return true;
-  } else if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE+1) && (RightFrontReading < 10 && LeftFrontReading > 14) )
+  } else if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (RightFrontReading < 12 && LeftFrontReading > 15) )
   {
     //left turn
     CORNER_DIRECTION = LEFT;
@@ -171,7 +172,7 @@ boolean Robot::isParallel(enum Direction way)    // POLLS A FEW SENSORS SO QUITE
     front = SensorRightFront->getReading();
     back = SensorRightBack->getReading();
     if (front > 20 || back > 20) { return false; }
-    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE)
+    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE))
     {
       return true;
     }
@@ -202,7 +203,6 @@ void Robot::makeParallel()
     stopBot();
     return;
   }
-//  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont parallel if approaching corner may aswell parallel 
   if (RightFrontReading < 15 && RightBackReading < 15)           // Use right sensors if in range
   {
     if (RightFrontReading < RightBackReading )         
@@ -250,7 +250,7 @@ void Robot::makeCentre()
     stopBot();
     return;
   }
-  if ( RightFrontReading > 16 || LeftFrontReading > 16 ) { return; }   // Dont centre if approaching corner
+  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont centre if approaching corner
   
   if (RightFrontReading > LeftFrontReading && RightBackReading > LeftBackReading)
   {
@@ -264,7 +264,7 @@ void Robot::makeCentre()
   {
     straight();
   }
-  delay(10);
+  delay(25);
 }
 
 
@@ -273,6 +273,6 @@ void Robot::ButtonPressed_EXTI0_Handler()
   if ( buttonPressed ) 
     {
       buttonPressed = false;
-      this->currentRun++;      // Could maybe add in end current run and start next run (seperately) functionality.
+      this->Runs.currentRun++;      // Could maybe add in end current run and start next run (seperately) functionality.
     }
 }

@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef RUN
+#define RUN
 
 
 class Run
@@ -23,3 +23,5 @@ class Run
 // NOT IN CLASS 
 void ButtonPressed_EXTI0(void);  // Pin 2 for external interrupt 0
 volatile boolean buttonPressed; // make sure this initializes as false
+
+#endif

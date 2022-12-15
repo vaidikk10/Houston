@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef ROBOT
+#define ROBOT
 
 
 #include <Servo.h>
@@ -69,3 +70,5 @@ class Robot
   void readSensors();
   void ButtonPressed_EXTI0_Handler();
 };
+
+#endif

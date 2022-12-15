@@ -85,7 +85,7 @@ void loop()
         delay(100);
         while (1)
         {
-          if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT)) break;     // 2 in a row needed. (end infinite loop when parallel)
+          if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT)) break;     // 2 in a row needed. (end infinite loop when parallel)
         }
         robot->STATE = Robot::SEARCHING;
         robot->straight();
@@ -96,7 +96,7 @@ void loop()
         delay(100);
         while (1)
         {
-          if (robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT)) break;
+          if (robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT)) break;
         }
         robot->STATE = Robot::SEARCHING;
         robot->straight();

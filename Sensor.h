@@ -1,4 +1,7 @@
-#pragma once
+
+#ifndef SENSOR
+#define SENSOR
+
 #include <NewPing.h>
 
 class Sensor
@@ -28,3 +31,5 @@ class Sensor
 
   NewPing * sonar;  // NewPing library for supposedly better sensor readings (due to some time out issue)
 };
+
+#endif

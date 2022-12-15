@@ -50,7 +50,7 @@ double Sensor::getReading()
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH, 100000);     // Time out at 100 ms, this will return 0
+  duration = pulseIn(echoPin, HIGH, 75000);     // Time out at 75 ms, this will return 0
   if (duration == 0) 
   {
     Serial.print("Sensor Disconnected [Trig, Echo] : ");
@@ -77,7 +77,7 @@ double Sensor::getReading()
 //    _avgActive = true;
 //  }
   delay(2);
-  if (trigPin == 100 || trigPin == 140)
+  if (trigPin == 6 || trigPin == 14)
     {
 //    //if(distance > 10)
 //    {
