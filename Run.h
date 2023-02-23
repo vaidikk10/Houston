@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef RUN
+#define RUN
 
 
 class Run
@@ -8,8 +8,6 @@ class Run
   long long StartTime;
 
   public:
-  boolean DeadendReached;
-  boolean DeadendTurn;
   boolean DidFinish;
   int Points;
   unsigned long TimeTaken;
@@ -18,3 +16,6 @@ class Run
   void stopTimer();
   int calculatePoints();
 };
+
+
+#endif

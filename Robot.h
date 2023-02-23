@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef ROBOT
+#define ROBOT
 
 
 #include <Servo.h>
@@ -9,17 +9,18 @@
 class Robot
 {
   private:
-  Run RUN[3];
   Servo ServoLeft, ServoRight;
   
-  
-
-
   public:
-  enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
+  struct  
+  {
+    int currentRun = 0;
+    int fastestRun = 0;   // fastest run is first (right turn) by default
+  } Runs;
+  enum state {BEFORE_RUN, START, SEARCHING, STOP, AT_CORNER, TURNING_LEFT, TURNING_RIGHT, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
   enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
   Robot();
-  ~Robot();
+//  ~Robot();
   
   Sensor
   *SensorLeftFront,
@@ -39,9 +40,9 @@ class Robot
 
   void startRun();
   void straight();
-  void stopBot();
-  int turnLeft();
-  int turnRight();
+  inline void stopBot();
+  void turnLeft(short turn_speed);
+  void turnRight(short turn_speed);
   void reverse();
   void decideToTurn();
   void decideTJunctionTurn();
@@ -53,11 +54,13 @@ class Robot
   boolean hasEnteredMaze();
   boolean isTJunction();
   boolean isFinished();
-  boolean isParallel();
+  boolean isParallel(enum Direction);
 
   // ********** NEWLY ADDED ********** 
   void makeParallel();
   void makeCentre();
   void readSensors();
- 
+  friend void ButtonPressed_EXTI0_Handler(Robot&);
 };
+
+#endif

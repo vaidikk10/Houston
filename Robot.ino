@@ -3,24 +3,33 @@
 #include "Run.h"
 
 
-#define ACCEPTABLE_RANGE 0.75        // arbitrary for now to allow compile
-#define WMA_SIZE 1
-#define SPEED 100
+// It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
+#define ACCEPTABLE_RANGE 0.75
+#define SPEED 100          // Pretty much max speed
 #define SLOW_SPEED 450
+#define TURNING_SPEED 460                 //remove this when not needed
+#define FRONT_STOPPING_DISTANCE 7.5
+#define STATIC 1500
+
 
 //***************************** SENSOR PINS *****************************
-#define RIGHT_FRONT_TRIG 2
-#define RIGHT_FRONT_ECHO 3
+// #define RIGHT_FRONT_TRIG 2                   // CHANGED TO PIN A2 (16)
+// #define RIGHT_FRONT_ECHO 3                   // CHANGED TO PIN A3 (17)
 #define RIGHT_BACK_TRIG 4
 #define RIGHT_BACK_ECHO 5
+
 #define FRONT_TRIG 6
 #define FRONT_ECHO 7
 #define BACK_TRIG 8
 #define BACK_ECHO 9
+
 #define LEFT_FRONT_TRIG 10
 #define LEFT_FRONT_ECHO 11
 #define LEFT_BACK_TRIG 14    // A0 
 #define LEFT_BACK_ECHO 15    // A1 
+
+#define RIGHT_FRONT_TRIG 16  // A2
+#define RIGHT_FRONT_ECHO 17  // A3
 //***********************************************************************
 
 
@@ -34,12 +43,12 @@ Robot::Robot()
 
   
   // ********** Sensor Setup ***********
-  SensorLeftFront  = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO, WMA_SIZE);
-  SensorLeftBack   = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO, WMA_SIZE);
-  SensorRightFront = new Sensor(RIGHT_FRONT_TRIG, RIGHT_FRONT_ECHO, WMA_SIZE);
-  SensorRightBack  = new Sensor(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO, WMA_SIZE);
-  SensorFront      = new Sensor(FRONT_TRIG, FRONT_ECHO, WMA_SIZE);
-  SensorBack       = new Sensor(BACK_TRIG, BACK_ECHO, WMA_SIZE);
+  SensorLeftFront = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO);
+  SensorLeftBack = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO);
+  SensorRightFront = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO);
+  SensorRightBack = new Sensor(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO);
+  SensorFront = new Sensor(FRONT_TRIG, FRONT_ECHO);
+  SensorBack = new Sensor(BACK_TRIG, BACK_ECHO);
 
 
   // ********** Servo Setup **********
@@ -48,32 +57,25 @@ Robot::Robot()
   STATE = START;
 }
 
-Robot::~Robot()
-{
-  delete SensorLeftFront;
-  delete SensorLeftBack;
-  delete SensorRightFront;
-  delete SensorRightBack;
-  delete SensorFront;
-  delete SensorBack;
-}
+//Robot::~Robot()
+//{
+//}
 
 void Robot::readSensors()
 {
-  robot->LeftFrontReading = robot->SensorLeftFront->getReading();
-  robot->LeftBackReading = robot->SensorLeftBack->getReading();
-  robot->RightFrontReading = robot->SensorRightFront->getReading();
-  robot->RightBackReading = robot->SensorRightBack->getReading();
-//  robot->FrontReading = robot->SensorFront->getReading();   // may not need this here.
-//  robot->BackReading = robot->SensorBack->getReading(); 
+  LeftFrontReading = SensorLeftFront->getReading();
+  LeftBackReading = SensorLeftBack->getReading();
+  RightFrontReading = SensorRightFront->getReading();
+  RightBackReading = SensorRightBack->getReading();
+//  FrontReading = SensorFront->getReading();   // These are done seperately
+//  BackReading = SensorBack->getReading(); 
 }
 
 
 void Robot::straight()
 {
-  if (SensorFront->getReading() < 10 || SensorFront->getAvg() < 10)
+  if (SensorFront->getReading() < FRONT_STOPPING_DISTANCE) 
   {
-    Serial.println("STOP!");
     stopBot();
     return;
   }
@@ -83,33 +85,30 @@ void Robot::straight()
   ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
-int Robot::turnLeft()                     // could make the returns more robust.
+void Robot::turnLeft(short turn_speed)
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1460); //1000 + SPEED);
-  ServoRight.writeMicroseconds(1460); //1000 + SPEED);
-  if (SensorFront->getReading() > 12 && isParallel()) return 1;  // return 1 when complete
-  return 0;       // when not complete
+  ServoLeft.writeMicroseconds(1000 + turn_speed);    //1460
+  ServoRight.writeMicroseconds(1000 + turn_speed); 
 }
 
 
-int Robot::turnRight()
+void Robot::turnRight(short turn_speed)
 {
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1540); // 2000 - SPEED);
-  ServoRight.writeMicroseconds(1540); // 2000 - SPEED);
-  if (SensorFront->getReading() > 12 && isParallel()) return 1;
-  return 0;
+  ServoLeft.writeMicroseconds(2000 - turn_speed); 
+  ServoRight.writeMicroseconds(2000 - turn_speed);     //1540
 }
 
-void Robot::stopBot()
+inline void Robot::stopBot()
 {
-  // while (!robot->isParallel() ) makeParallel();
+  ServoLeft.writeMicroseconds(1500);
+  ServoRight.writeMicroseconds(1500);
   ServoLeft.detach();
   ServoRight.detach();
-  STATE = SEARCHING;
+  STATE = SEARCHING;    // Could lead to circular loop if not careful - probably change this
 }
 
 void Robot::reverse()
@@ -122,7 +121,7 @@ void Robot::reverse()
 
 boolean Robot::isDeadEnd()
 {
-  if (LeftFrontReading < 8 && RightFrontReading < 8 && SensorFront->getReading() < 8)
+  if (LeftFrontReading < 10 && RightFrontReading < 10 && SensorFront->getReading() < FRONT_STOPPING_DISTANCE)
   {
     return true;  
   }
@@ -131,12 +130,12 @@ boolean Robot::isDeadEnd()
 
 boolean Robot::isCorner()
 {
-  if (SensorFront->getReading() < 8 && (LeftFrontReading < 10 && RightFrontReading > 18))
+  if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (LeftFrontReading < 12 && RightFrontReading > 15) )
   {
     //right turn
     CORNER_DIRECTION = RIGHT;
     return true;
-  } else if (SensorFront->getReading() < 12 && (SensorRightFront->getReading() < 10 && SensorLeftFront->getReading() > 18))
+  } else if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (RightFrontReading < 12 && LeftFrontReading > 15) )
   {
     //left turn
     CORNER_DIRECTION = LEFT;
@@ -147,7 +146,7 @@ boolean Robot::isCorner()
 
 boolean Robot::hasEnteredMaze()
 {
-  if (RightFrontReading < 12 && LeftFrontReading < 12 && STATE == START)
+  if (RightFrontReading < 12 && LeftFrontReading < 12 && LeftBackReading && RightBackReading < 12 && STATE == START)
   {
     return true;
   }
@@ -156,7 +155,7 @@ boolean Robot::hasEnteredMaze()
 
 boolean Robot::isTJunction()
 {
-  if (RightFrontReading > 10 && LeftFrontReading > 10 && SensorFront->getReading() < 8)    // Definately could add more cases here *********************************
+  if (RightFrontReading > 15 && LeftFrontReading > 15  && SensorFront->getReading() < FRONT_STOPPING_DISTANCE)    // Definately could add more cases here *********************************
   {
     return true;
   }
@@ -164,46 +163,64 @@ boolean Robot::isTJunction()
 }
 
 
-boolean Robot::isParallel()
+boolean Robot::isParallel(enum Direction way)    // POLLS A FEW SENSORS SO QUITE SLOW!
 {
-  if ((RightFrontReading - ACCEPTABLE_RANGE) < RightBackReading && RightBackReading < (RightFrontReading + ACCEPTABLE_RANGE))    // can make more robust *********************
+  double front, back;
+  if (way == LEFT)
   {
-    return true;
-  }else if ((LeftFrontReading - ACCEPTABLE_RANGE) < LeftBackReading && LeftBackReading < (LeftFrontReading + ACCEPTABLE_RANGE))
+    front = SensorRightFront->getReading();
+    back = SensorRightBack->getReading();
+    if (front > 20 || back > 20) { return false; }
+    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE))
+    {
+      return true;
+    }
+  }else if (way == RIGHT)
   {
-    return true;
+    front = SensorLeftFront->getReading();
+    back = SensorLeftBack->getReading();
+    if (front > 20 || back > 20) { return false; }
+    if ((front - ACCEPTABLE_RANGE) < back && back < (front + ACCEPTABLE_RANGE))
+    {
+      return true;
+    }
   }
   return false;
 }
 
 boolean Robot::isFinished()   // ------------------------------------------------------- DO THIS -------------------------------------------------------
-{
-  return true;
+{                             // BUTTONS COULD ASSIST WITH THIS.  ----- CHECK FLAG SET BY BUTTON INTERRUPT ----- 
+                              // THIS INTERRUPT COULD BE IN RUN (IT NEEDS TO BE A STATIC CLASS METHOD) STATIC TO ALLOW IT TO EXIST WITHOUT AN INSTANCE
+  return false;  // idk...
 }
 
 
 void Robot::makeParallel()  
 {
+  if (SensorFront->getReading() < FRONT_STOPPING_DISTANCE) 
+  {
+    stopBot();
+    return;
+  }
   if (RightFrontReading < 15 && RightBackReading < 15)           // Use right sensors if in range
   {
-    if (RightFrontReading < RightBackReading )// || SensorRightFront->getAvg() < SensorRightBack->getAvg())          
+    if (RightFrontReading < RightBackReading )         
     {
       // Turn slightly left (slow down left servo)
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
-//      turnLeft();
-      delay(10);
-    }else if (RightFrontReading > RightBackReading ) // || SensorRightFront->getAvg() > SensorRightBack->getAvg())
+    }else if (RightFrontReading > RightBackReading )
     {
       // Turn right
       ServoRight.writeMicroseconds(1000 + SLOW_SPEED); 
       ServoRight.writeMicroseconds(2000 - SPEED);
 //      turnRight();
-      delay(10);
     }
+    delay(25);                                                                // remove this 
   }
   ServoLeft.writeMicroseconds(2000 - SPEED);
   ServoRight.writeMicroseconds(1000 + SPEED);
+  readSensors();
   if (LeftFrontReading < 15 && LeftBackReading < 15)     // Or use left sensors if in range
   {
     if (LeftFrontReading < LeftBackReading )// || SensorLeftFront->getAvg() < SensorLeftBack->getAvg())
@@ -211,40 +228,53 @@ void Robot::makeParallel()
 //      turnRight();
       ServoRight.writeMicroseconds(1000 + SLOW_SPEED); 
       ServoLeft.writeMicroseconds(2000 - SPEED);
-      delay(10);
     }else if (LeftFrontReading > LeftBackReading ) // || SensorLeftFront->getAvg() > SensorLeftBack->getAvg())
     {
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
 //      turnLeft();
-      delay(10);
     }
+    delay(25);                                                                    // remove this
   }
+  ServoLeft.writeMicroseconds(2000 - SPEED);
+  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 
 void Robot::makeCentre()
 {
-//  Serial.println("Centring");
-  if (SensorFront->getReading() < 8 ) stopBot();
+  if (SensorFront->getReading() < FRONT_STOPPING_DISTANCE) 
+  {
+    stopBot();
+    return;
+  }
+  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont centre if approaching corner
+  
   if (RightFrontReading > LeftFrontReading && RightBackReading > LeftBackReading)
   {
-    ServoRight.writeMicroseconds(1000 + (460));
+    ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
     ServoLeft.writeMicroseconds(2000 - SPEED);
-//    while ( !isParallel() )
-//    {
-//      if (SensorFront->getReading() < 10) return;  
-//    }
   }else if (RightFrontReading < LeftFrontReading && RightBackReading < LeftBackReading)
   {
-    ServoLeft.writeMicroseconds(2000 - (460));
+    ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
     ServoRight.writeMicroseconds(1000 + SPEED);
-//    while ( !isParallel() )
-//    {
-//      if (SensorFront->getReading() < 10) return;
-//    }
   }else
   {
     straight();
   }
+  delay(25);                                                                          // reduce this.
+}
+
+
+void ButtonPressed_EXTI0_Handler (Robot& bot)    // This is a friend function and there ISR for the button press
+{
+  bot.stopBot();
+  if ( bot.STATE == Robot::BEFORE_RUN ) 
+    {
+      bot.STATE = Robot::START;
+    }else
+    {
+      if ( bot.Runs.currentRun == 2 ) return; // final run complete
+      (bot.Runs.currentRun)++;
+    }
 }
