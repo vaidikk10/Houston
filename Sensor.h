@@ -1,3 +1,4 @@
+
 #ifndef SENSOR
 #define SENSOR
 
@@ -8,13 +9,16 @@ class Sensor
   int trigPin;
   int echoPin;
   double reading;
+  double movingAvg;
   double THRESHOLD;
+
 
   public:
   Sensor(int, int);
 //  ~Sensor();
+//  void add(int);
   double getReading();
-  double getAvg();  
+  boolean isWall();
 };
 
 #endif

@@ -1,6 +1,10 @@
 #include "Sensor.h"
 
 
+//Sensor::~Sensor()
+//{
+//  delete sonar;
+//}
 
 
 Sensor::Sensor(int trigPin, int echoPin)
@@ -8,15 +12,6 @@ Sensor::Sensor(int trigPin, int echoPin)
   this->trigPin = trigPin;
   this->echoPin = echoPin;
 }
-
-
-//Sensor::~Sensor()
-//{
-//  delete sonar;
-//}
-
-
-
 
 
 double Sensor::getReading()
@@ -34,25 +29,18 @@ double Sensor::getReading()
     Serial.print(trigPin);
     Serial.print(", ");
     Serial.println(echoPin);
-    // MAYBE PUT AN AVERAGE VALUE IN HERE FOR THE PAST ELEMENT WMA ARRAY???
     if (trigPin == FRONT_TRIG) return 0;  // to make sure the bot will stop!
-    return 150;  
+    return 150 + (trigPin*8);  
   } else 
   {
     distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
     if(distance > 150){
-      distance = 150;
+      distance = 150 + (trigPin*8);
     }
   }
   
   delay(2);
-  if (trigPin == 6 || trigPin == 14)    // remove this after testing 
-    {
-      Serial.print("Sensor: ");
-      Serial.print(trigPin);
-      Serial.print(" is: ");
-      Serial.println(distance);
-    }
+
   return distance;
 
 }

@@ -1,3 +1,4 @@
+
 #ifndef ROBOT
 #define ROBOT
 
@@ -12,43 +13,48 @@ class Robot
   Servo ServoLeft, ServoRight;
   
   public:
+  struct LED
+  {
+    bool state;
+    int pin;
+  } RedLED, YellowLED, GreenLED;
   struct  
   {
+    Run individualRun[3];
     int currentRun = 0;
     int fastestRun = 0;   // fastest run is first (right turn) by default
   } Runs;
-  enum state {BEFORE_RUN, START, SEARCHING, STOP, AT_CORNER, TURNING_LEFT, TURNING_RIGHT, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
+  enum state {BEFORE_RUN=0, START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING, LAST_RUN_FINISHED} STATE;
   enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
-  Robot();
-//  ~Robot();
-  
+
   Sensor
   *SensorLeftFront,
   *SensorLeftBack,
   *SensorRightFront,
   *SensorRightBack,
-  *SensorFront,
-  *SensorBack;
+  *SensorFront;
 
   double
   LeftFrontReading,
   LeftBackReading,
   RightFrontReading,
   RightBackReading,
-  FrontReading,
-  BackReading;
+  FrontReading;
+
+  Robot();
+  ~Robot();
+  
 
   void startRun();
   void straight();
-  inline void stopBot();
-  void turnLeft(short turn_speed);
-  void turnRight(short turn_speed);
+  void stopBot();
+  void turnLeft(short);
+  void turnRight(short);
   void reverse();
   void decideToTurn();
   void decideTJunctionTurn();
   void decideDeadEnd();
 
-// ********** MADE THESE PUBLIC! **********
   boolean isDeadEnd();
   boolean isCorner();
   boolean hasEnteredMaze();
@@ -60,7 +66,8 @@ class Robot
   void makeParallel();
   void makeCentre();
   void readSensors();
-  friend void ButtonPressed_EXTI0_Handler(Robot&);
+  void LED_flash();
+  friend void ButtonPressed_EXTI0_Handler(Robot*);
 };
 
 #endif

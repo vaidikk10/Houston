@@ -7,59 +7,94 @@
 #define ACCEPTABLE_RANGE 0.75
 #define SPEED 100          // Pretty much max speed
 #define SLOW_SPEED 450
-#define TURNING_SPEED 460                 //remove this when not needed
-#define FRONT_STOPPING_DISTANCE 7.5
-#define STATIC 1500
+#define FRONT_STOPPING_DISTANCE 6.5
+#define TURNING_SPEED 40
+
+//***************************** BUTTON SYSTEMS PINS *****************************
+/* SWITCH PIN : 3
+ *  LED0      : A5
+ *  LED1      : A4
+ *  LED2      : 2
+ */
+
+#define BUTTON_PIN 3
+#define LED2 2     //        -- Green
+#define LED1 18    // A4     -- Red
+#define LED0 19    // A5     -- Yellow
 
 
 //***************************** SENSOR PINS *****************************
-// #define RIGHT_FRONT_TRIG 2                   // CHANGED TO PIN A2 (16)
-// #define RIGHT_FRONT_ECHO 3                   // CHANGED TO PIN A3 (17)
-#define RIGHT_BACK_TRIG 4
-#define RIGHT_BACK_ECHO 5
-
-#define FRONT_TRIG 6
-#define FRONT_ECHO 7
-#define BACK_TRIG 8
-#define BACK_ECHO 9
-
-#define LEFT_FRONT_TRIG 10
-#define LEFT_FRONT_ECHO 11
-#define LEFT_BACK_TRIG 14    // A0 
-#define LEFT_BACK_ECHO 15    // A1 
-
-#define RIGHT_FRONT_TRIG 16  // A2
-#define RIGHT_FRONT_ECHO 17  // A3
+#define RIGHT_FRONT_TRIG 15  
+#define RIGHT_FRONT_ECHO 14  
+#define RIGHT_BACK_TRIG 10
+#define RIGHT_BACK_ECHO 11
+#define FRONT_TRIG 17
+#define FRONT_ECHO 16
+#define LEFT_FRONT_TRIG 4
+#define LEFT_FRONT_ECHO 5
+#define LEFT_BACK_TRIG 6     
+#define LEFT_BACK_ECHO 7     
 //***********************************************************************
 
 
-// ----------- IMPORTANT ------------------
-// WE MIGHT WANT TO SWAP LEFT BACK TRIG AND ECHO PINS BECAUSE ARDUINO DOCUMENTATION
-// STATES PIN 13 IS NOT THE BEST TO WORK WITH AS AN INPUT DUE TO THE LED 
-// https://docs.arduino.cc/learn/microcontrollers/digital-pins
-
 Robot::Robot()
 {
-
   
   // ********** Sensor Setup ***********
-  SensorLeftFront = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO);
-  SensorLeftBack = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO);
-  SensorRightFront = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO);
-  SensorRightBack = new Sensor(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO);
-  SensorFront = new Sensor(FRONT_TRIG, FRONT_ECHO);
-  SensorBack = new Sensor(BACK_TRIG, BACK_ECHO);
+  SensorLeftFront  = new Sensor(LEFT_FRONT_TRIG, LEFT_FRONT_ECHO);
+  SensorLeftBack   = new Sensor(LEFT_BACK_TRIG, LEFT_BACK_ECHO);
+  SensorRightFront = new Sensor(RIGHT_FRONT_TRIG, RIGHT_FRONT_ECHO);
+  SensorRightBack  = new Sensor(RIGHT_BACK_TRIG, RIGHT_BACK_ECHO);
+  SensorFront      = new Sensor(FRONT_TRIG, FRONT_ECHO);
 
 
   // ********** Servo Setup **********
   ServoRight.attach(12);
   ServoLeft.attach(13);
-  STATE = START;
+  STATE = BEFORE_RUN;
+
+  // ********** LED Setup **********
+  YellowLED = {false, LED0};
+  RedLED = {false, LED1};
+  GreenLED = {false, LED2};
 }
 
-//Robot::~Robot()
-//{
-//}
+Robot::~Robot()
+{
+  delete SensorLeftFront;
+  delete SensorLeftBack;
+  delete SensorRightFront;
+  delete SensorRightBack;
+  delete SensorFront;
+}
+
+void Robot::LED_flash()
+{
+    switch (Runs.currentRun)
+      {
+      case 0:
+        GreenLED.state = !(GreenLED.state & 0x1); // flip state of LED
+        digitalWrite(GreenLED.pin, GreenLED.state);
+        digitalWrite(RedLED.pin, LOW);
+        digitalWrite(YellowLED.pin, LOW);
+        break;
+      case 1:
+        RedLED.state = !(RedLED.state & 0x1);
+        GreenLED.state = RedLED.state; 
+        digitalWrite(RedLED.pin, RedLED.state);
+        digitalWrite(GreenLED.pin, GreenLED.state);
+        digitalWrite(YellowLED.pin, LOW);
+        break;
+      case 2:
+        YellowLED.state = !(YellowLED.state & 0x1);
+        RedLED.state = YellowLED.state;
+        GreenLED.state = YellowLED.state; 
+        digitalWrite(YellowLED.pin, YellowLED.state);
+        digitalWrite(RedLED.pin, RedLED.state);
+        digitalWrite(GreenLED.pin, GreenLED.state);
+        break;
+      }
+}
 
 void Robot::readSensors()
 {
@@ -67,8 +102,7 @@ void Robot::readSensors()
   LeftBackReading = SensorLeftBack->getReading();
   RightFrontReading = SensorRightFront->getReading();
   RightBackReading = SensorRightBack->getReading();
-//  FrontReading = SensorFront->getReading();   // These are done seperately
-//  BackReading = SensorBack->getReading(); 
+//  FrontReading = SensorFront->getReading();   // may not need this here.
 }
 
 
@@ -79,42 +113,59 @@ void Robot::straight()
     stopBot();
     return;
   }
-  ServoRight.attach(12);
-  ServoLeft.attach(13);
+  if (!ServoLeft.attached() && !ServoRight.attached())
+  {
+    ServoRight.attach(12);
+    ServoLeft.attach(13);
+  }
   ServoLeft.writeMicroseconds(2000 - SPEED);
   ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
-void Robot::turnLeft(short turn_speed)
+void Robot::turnLeft(short turning_speed)
 {
-  ServoRight.attach(12);
-  ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(1000 + turn_speed);    //1460
-  ServoRight.writeMicroseconds(1000 + turn_speed); 
+  if (!ServoLeft.attached() && !ServoRight.attached())
+  {
+    ServoRight.attach(12);
+    ServoLeft.attach(13);
+  }
+  ServoLeft.writeMicroseconds(1500 - turning_speed);
+  ServoRight.writeMicroseconds(1500 - turning_speed);
+//  ServoLeft.writeMicroseconds(1000 + TURNING_SPEED);    //1460   - slow turning speed is good
+//  ServoRight.writeMicroseconds(1000 + TURNING_SPEED); 
 }
 
 
-void Robot::turnRight(short turn_speed)
+void Robot::turnRight(short turning_speed)
 {
-  ServoRight.attach(12);
-  ServoLeft.attach(13);
-  ServoLeft.writeMicroseconds(2000 - turn_speed); 
-  ServoRight.writeMicroseconds(2000 - turn_speed);     //1540
+  //turning speed from ~ 40 to 100, 40 being slowest 
+  if (!ServoLeft.attached() && !ServoRight.attached())
+  {
+    ServoRight.attach(12);
+    ServoLeft.attach(13);
+  }
+  ServoLeft.writeMicroseconds(1500 + turning_speed);
+  ServoRight.writeMicroseconds(1500 + turning_speed);
+//  ServoLeft.writeMicroseconds(2000 - TURNING_SPEED); 
+//  ServoRight.writeMicroseconds(2000 - TURNING_SPEED);     //1540
 }
 
-inline void Robot::stopBot()
+void Robot::stopBot()
 {
   ServoLeft.writeMicroseconds(1500);
   ServoRight.writeMicroseconds(1500);
   ServoLeft.detach();
   ServoRight.detach();
-  STATE = SEARCHING;    // Could lead to circular loop if not careful - probably change this
+  // STATE = SEARCHING;    // Could lead to circular loop if not careful - probably change this
 }
 
 void Robot::reverse()
 {
-  ServoRight.attach(12);
-  ServoLeft.attach(13);
+  if (!ServoLeft.attached() && !ServoRight.attached())
+  {
+    ServoRight.attach(12);
+    ServoLeft.attach(13);
+  }
   ServoLeft.writeMicroseconds(1000 + SPEED);
   ServoRight.writeMicroseconds(2000 - SPEED);
 }
@@ -202,42 +253,37 @@ void Robot::makeParallel()
     stopBot();
     return;
   }
-  if (RightFrontReading < 15 && RightBackReading < 15)           // Use right sensors if in range
+  if (RightFrontReading < 10 && RightBackReading < 10)           // Use right sensors if in range
   {
-    if (RightFrontReading < RightBackReading )         
+    if ( RightFrontReading < RightBackReading )         
     {
       // Turn slightly left (slow down left servo)
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
-    }else if (RightFrontReading > RightBackReading )
+//      turnLeft
+    }else if ( RightFrontReading > RightBackReading )
     {
       // Turn right
       ServoRight.writeMicroseconds(1000 + SLOW_SPEED); 
       ServoRight.writeMicroseconds(2000 - SPEED);
-//      turnRight();
+//      turnRight
     }
-    delay(25);                                                                // remove this 
   }
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
-  readSensors();
-  if (LeftFrontReading < 15 && LeftBackReading < 15)     // Or use left sensors if in range
+  else if (LeftFrontReading < 10 && LeftBackReading < 10)     // Or use left sensors if in range
   {
-    if (LeftFrontReading < LeftBackReading )// || SensorLeftFront->getAvg() < SensorLeftBack->getAvg())
+    if (LeftFrontReading < LeftBackReading )
     {
-//      turnRight();
+//      turnRight
       ServoRight.writeMicroseconds(1000 + SLOW_SPEED); 
       ServoLeft.writeMicroseconds(2000 - SPEED);
-    }else if (LeftFrontReading > LeftBackReading ) // || SensorLeftFront->getAvg() > SensorLeftBack->getAvg())
+    }else if (LeftFrontReading > LeftBackReading )
     {
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
-//      turnLeft();
+//      turnLeft
     }
-    delay(25);                                                                    // remove this
+    //delay(6);
   }
-  ServoLeft.writeMicroseconds(2000 - SPEED);
-  ServoRight.writeMicroseconds(1000 + SPEED);
 }
 
 
@@ -248,33 +294,74 @@ void Robot::makeCentre()
     stopBot();
     return;
   }
-  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont centre if approaching corner
+//  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont centre if approaching corner
+  if ( RightFrontReading > 20 && LeftFrontReading < 2.5 ) 
+  {  // right 
+    ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
+    ServoLeft.writeMicroseconds(2000 - SPEED);    
+  } else if ( LeftFrontReading > 20 && RightFrontReading < 2.5 )
+  {  // left
+    ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
+    ServoRight.writeMicroseconds(1000 + SPEED);    
+  }else if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }
   
   if (RightFrontReading > LeftFrontReading && RightBackReading > LeftBackReading)
-  {
+  {   // right 
     ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
     ServoLeft.writeMicroseconds(2000 - SPEED);
   }else if (RightFrontReading < LeftFrontReading && RightBackReading < LeftBackReading)
-  {
+  {  // left
     ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
     ServoRight.writeMicroseconds(1000 + SPEED);
-  }else
+  }else 
   {
     straight();
   }
-  delay(25);                                                                          // reduce this.
+  //delay(6);
 }
 
 
-void ButtonPressed_EXTI0_Handler (Robot& bot)    // This is a friend function and there ISR for the button press
+void ButtonPressed_EXTI0_Handler (Robot* bot)    // This is a friend function and there ISR for the button press
 {
-  bot.stopBot();
-  if ( bot.STATE == Robot::BEFORE_RUN ) 
+  buttonInterrupt = false; 
+  
+  bot->stopBot();
+  if ( bot->STATE == Robot::BEFORE_RUN ) 
     {
-      bot.STATE = Robot::START;
+      bot->STATE = Robot::START;
+      bot->ServoLeft.attach(13);
+      bot->ServoRight.attach(12);
+      switch (bot->Runs.currentRun)
+        {
+        case 0:
+          digitalWrite(bot->GreenLED.pin, HIGH);
+          digitalWrite(bot->RedLED.pin, LOW);
+          digitalWrite(bot->YellowLED.pin, LOW);
+          break;
+        case 1:
+          digitalWrite(bot->RedLED.pin, HIGH);
+          digitalWrite(bot->GreenLED.pin, HIGH);
+          digitalWrite(bot->YellowLED.pin, LOW);
+          break;
+        case 2:
+          digitalWrite(bot->YellowLED.pin, HIGH);
+          digitalWrite(bot->RedLED.pin, HIGH);
+          digitalWrite(bot->GreenLED.pin, HIGH);
+          break;
+        }
     }else
     {
-      if ( bot.Runs.currentRun == 2 ) return; // final run complete
-      (bot.Runs.currentRun)++;
+     bot->ServoLeft.detach();
+     bot->ServoRight.detach();
+     digitalWrite(bot->GreenLED.pin, LOW);
+     digitalWrite(bot->RedLED.pin, LOW);
+     digitalWrite(bot->YellowLED.pin, LOW);
+      if ( bot->Runs.currentRun == 2 )  // final run complete
+      {
+        bot->STATE = Robot::LAST_RUN_FINISHED;
+        return;
+      }
+      bot->STATE = Robot::BEFORE_RUN;
+      (bot->Runs.currentRun)++;
     }
 }
