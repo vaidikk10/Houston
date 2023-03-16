@@ -6,8 +6,8 @@
 // It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
 #define ACCEPTABLE_RANGE 0.75
 #define SPEED 400          // Pretty much max speed    -- changed to 400 from 100
-#define SLOW_SPEED 425     // changed from 450 to 425 to reduce jankyness
-#define FRONT_STOPPING_DISTANCE 6.5
+#define SLOW_SPEED 450     // changed from 450 to 425 to reduce jankyness
+#define FRONT_STOPPING_DISTANCE 5.5     // 6 to 4.5
 #define TURNING_SPEED 40
 
 //***************************** BUTTON SYSTEMS PINS *****************************
@@ -181,12 +181,12 @@ boolean Robot::isDeadEnd()
 
 boolean Robot::isCorner()
 {
-  if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (LeftFrontReading < 12 && RightFrontReading > 15) )
+  if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (LeftFrontReading < 14 && RightFrontReading > 15) )    // 12 to 14
   {
     //right turn
     CORNER_DIRECTION = RIGHT;
     return true;
-  } else if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (RightFrontReading < 12 && LeftFrontReading > 15) )
+  } else if (SensorFront->getReading() < (FRONT_STOPPING_DISTANCE) && (RightFrontReading < 14 && LeftFrontReading > 15) )  // 12 to 14
   {
     //left turn
     CORNER_DIRECTION = LEFT;
@@ -197,7 +197,7 @@ boolean Robot::isCorner()
 
 boolean Robot::hasEnteredMaze()
 {
-  if (RightFrontReading < 12 && LeftFrontReading < 12 && LeftBackReading && RightBackReading < 12 && STATE == START)
+  if ((RightFrontReading < 12 && RightBackReading) || (LeftFrontReading < 12 && LeftBackReading)  < 12 && STATE == START)
   {
     return true;
   }
@@ -242,6 +242,7 @@ boolean Robot::isParallel(enum Direction way)    // POLLS A FEW SENSORS SO QUITE
 boolean Robot::isFinished()   // ------------------------------------------------------- DO THIS -------------------------------------------------------
 {                             // BUTTONS COULD ASSIST WITH THIS.  ----- CHECK FLAG SET BY BUTTON INTERRUPT ----- 
                               // THIS INTERRUPT COULD BE IN RUN (IT NEEDS TO BE A STATIC CLASS METHOD) STATIC TO ALLOW IT TO EXIST WITHOUT AN INSTANCE
+  if ( LeftFrontReading > 20 && LeftBackReading > 20 && RightFrontReading > 20 && RightBackReading > 20 && SensorFront->getReading() > 20 ) return true;
   return false;  // idk...
 }
 
@@ -253,7 +254,7 @@ void Robot::makeParallel()
     stopBot();
     return;
   }
-  if (RightFrontReading < 10 && RightBackReading < 10)           // Use right sensors if in range
+  if (RightFrontReading < 8 && RightBackReading < 8)           // Use right sensors if in range     -- 10 to 8
   {
     if ( RightFrontReading < RightBackReading )         
     {
@@ -270,7 +271,7 @@ void Robot::makeParallel()
     }
   }
   readSensors();
-  /*else*/ if (LeftFrontReading < 10 && LeftBackReading < 10)     // Or use left sensors if in range
+  /*else*/ if (LeftFrontReading < 8 && LeftBackReading < 8)     // Or use left sensors if in range
   {
     if (LeftFrontReading < LeftBackReading )
     {
@@ -283,7 +284,7 @@ void Robot::makeParallel()
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
     }
-    //delay(6);
+//    delay(20);
   }
 }
 
@@ -295,16 +296,34 @@ void Robot::makeCentre()
     stopBot();
     return;
   }
-//  if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }   // Dont centre if approaching corner
-  if ( RightFrontReading > 20 && LeftFrontReading < 2.5 ) 
+// return out of all functions between dashes
+// -------------------------------------------------------------------------------------------------
+  if ( RightFrontReading > 20 && LeftFrontReading < 5 ) // 2.5 to 5
   {  // right 
     ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
-    ServoLeft.writeMicroseconds(2000 - SPEED);    
-  } else if ( LeftFrontReading > 20 && RightFrontReading < 2.5 )
+    ServoLeft.writeMicroseconds(2000 - SPEED);
+    return;    
+  } else if ( LeftFrontReading > 20 && RightFrontReading < 5 )
   {  // left
     ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
-    ServoRight.writeMicroseconds(1000 + SPEED);    
-  }else if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }
+    ServoRight.writeMicroseconds(1000 + SPEED);
+    return;    
+  } else if ( RightFrontReading > 20 && (6 < LeftFrontReading && LeftFrontReading < 10))    
+  {
+    // left
+    ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
+    ServoRight.writeMicroseconds(1000 + SPEED);
+    return;    
+  } else if ( LeftFrontReading > 20 && (6 < RightFrontReading && RightFrontReading < 10))
+  {
+    // right
+    ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
+    ServoLeft.writeMicroseconds(2000 - SPEED);
+    return;
+  } else if ( RightFrontReading > 20 || LeftFrontReading > 20 ) { return; }
+  // If any of the above is true we dont want to centre past this point
+  // -------------------------------------------------------------------------------------------------
+
   
   if (RightFrontReading > LeftFrontReading && RightBackReading > LeftBackReading)
   {   // right 
@@ -318,7 +337,7 @@ void Robot::makeCentre()
   {
     straight();
   }
-  //delay(6);
+//  delay(5);
 }
 
 
@@ -350,6 +369,10 @@ void ButtonPressed_EXTI0_Handler (Robot* bot)    // This is a friend function an
           digitalWrite(bot->GreenLED.pin, HIGH);
           break;
         }
+    }else if (bot->STATE == Robot::LAST_RUN_FINISHED)
+    {
+      bot->Runs.currentRun = 0;
+      bot->STATE = Robot::BEFORE_RUN;
     }else
     {
      bot->ServoLeft.detach();

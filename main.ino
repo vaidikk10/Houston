@@ -6,7 +6,8 @@
 #include <SoftwareSerial.h>
 #include "Robot.h"
 
-#define TURNING_SPEED 40
+#define TURNING_SPEED 40   // 40
+#define SLOW_CORNER 25
 
 
 SoftwareSerial HC06(12, 13); //HC06-TX Pin 10, HC06-RX to Arduino Pin 11
@@ -59,7 +60,7 @@ void loop()
   switch (robot->STATE)
   {
     case Robot::BEFORE_RUN:
-      if ( (millis() - LEDflash_time) > 1500 )    // if its been 1.5s since last flash
+      if ( (millis() - LEDflash_time) > 1000 )    // if its been 1.5s since last flash
       {
         LEDflash_time = millis();
         robot->LED_flash();
@@ -73,9 +74,13 @@ void loop()
     
     case Robot::SEARCHING:
        robot->straight();
-       robot->makeCentre();
        robot->makeParallel();
-
+       robot->makeCentre();
+       if (robot->isFinished())
+       {
+        robot->STATE = Robot::FINISHED;
+       }
+      
        if (robot->SensorFront->getReading() < 8) // START CHECKING FOR CORNERS WHEN WITHIN 10CM OF WALL  
        {
         if (robot->isCorner() )
@@ -113,7 +118,7 @@ void loop()
         }
         if (robot->RightFrontReading <= robot->RightBackReading)
         {
-          robot->turnLeft(TURNING_SPEED);
+          robot->turnLeft(SLOW_CORNER);
         }else
         {
           robot->turnLeft(75);
@@ -128,14 +133,15 @@ void loop()
         }
         if (robot->LeftFrontReading <= robot->LeftBackReading)
         {
-          robot->turnRight(TURNING_SPEED);
+          robot->turnRight(SLOW_CORNER);
         }else
         {
           robot->turnRight(75);
         }
       }
       break;
-      
+
+            
     case Robot::AT_TJUNCTION:
       if ( robot->Runs.currentRun == 0 )
       {
@@ -167,9 +173,15 @@ void loop()
       delay(2250);
       robot->STATE = Robot::SEARCHING;
       break;
-      
+
     case Robot::REVERSING:      // maybe count turns after wrong turn until deaedend, so we know when were back to T Junction
       break;
+
+    case Robot::FINISHED:
+      if (robot->isFinished())
+      {
+        robot->STATE = Robot::STOP;
+      }
 
     case Robot::LAST_RUN_FINISHED:
       robot->stopBot();

@@ -24,7 +24,7 @@ class Robot
     int currentRun = 0;
     int fastestRun = 0;   // fastest run is first (right turn) by default
   } Runs;
-  enum state {BEFORE_RUN=0, START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING, LAST_RUN_FINISHED} STATE;
+  enum state {BEFORE_RUN=0, START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, FINISHED, AT_DEADEND, REVERSING, LAST_RUN_FINISHED} STATE;
   enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
 
   Sensor
