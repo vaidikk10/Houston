@@ -5,8 +5,8 @@
 
 // It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
 #define ACCEPTABLE_RANGE 0.75
-#define SPEED 100          // Pretty much max speed
-#define SLOW_SPEED 450
+#define SPEED 400          // Pretty much max speed    -- changed to 400 from 100
+#define SLOW_SPEED 425     // changed from 450 to 425 to reduce jankyness
 #define FRONT_STOPPING_DISTANCE 6.5
 #define TURNING_SPEED 40
 
@@ -265,11 +265,12 @@ void Robot::makeParallel()
     {
       // Turn right
       ServoRight.writeMicroseconds(1000 + SLOW_SPEED); 
-      ServoRight.writeMicroseconds(2000 - SPEED);
+      ServoLeft.writeMicroseconds(2000 - SPEED);
 //      turnRight
     }
   }
-  else if (LeftFrontReading < 10 && LeftBackReading < 10)     // Or use left sensors if in range
+  readSensors();
+  /*else*/ if (LeftFrontReading < 10 && LeftBackReading < 10)     // Or use left sensors if in range
   {
     if (LeftFrontReading < LeftBackReading )
     {
@@ -278,9 +279,9 @@ void Robot::makeParallel()
       ServoLeft.writeMicroseconds(2000 - SPEED);
     }else if (LeftFrontReading > LeftBackReading )
     {
+//      turnLeft
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
-//      turnLeft
     }
     //delay(6);
   }
