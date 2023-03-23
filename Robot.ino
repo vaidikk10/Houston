@@ -6,7 +6,7 @@
 // It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
 #define ACCEPTABLE_RANGE 0.75
 #define SPEED 400          // Pretty much max speed    -- changed to 400 from 100
-#define SLOW_SPEED 450     // changed from 450 to 425 to reduce jankyness
+#define SLOW_SPEED 460     // changed from 450 to 425 to reduce jankyness
 #define FRONT_STOPPING_DISTANCE 5.5     // 6 to 4.5
 #define TURNING_SPEED 40
 
@@ -254,7 +254,7 @@ void Robot::makeParallel()
     stopBot();
     return;
   }
-  if (RightFrontReading < 8 && RightBackReading < 8)           // Use right sensors if in range     -- 10 to 8
+  if (RightFrontReading < 10 && RightBackReading < 10)           // Use right sensors if in range     -- 10 to 8
   {
     if ( RightFrontReading < RightBackReading )         
     {
@@ -271,7 +271,7 @@ void Robot::makeParallel()
     }
   }
   readSensors();
-  /*else*/ if (LeftFrontReading < 8 && LeftBackReading < 8)     // Or use left sensors if in range
+  /*else*/ if (LeftFrontReading < 10 && LeftBackReading < 10)     // Or use left sensors if in range
   {
     if (LeftFrontReading < LeftBackReading )
     {
@@ -284,7 +284,7 @@ void Robot::makeParallel()
       ServoLeft.writeMicroseconds(2000 - SLOW_SPEED); 
       ServoRight.writeMicroseconds(1000 + SPEED);
     }
-//    delay(20);
+    delay(20);
   }
 }
 
@@ -296,9 +296,19 @@ void Robot::makeCentre()
     stopBot();
     return;
   }
+  if ((RightBackReading - RightFrontReading) > 3) 
+  {
+    makeParallel();
+    return;
+  }else if ((LeftBackReading - LeftFrontReading) > 3) 
+  {
+    makeParallel();
+    return;
+  }
+  
 // return out of all functions between dashes
 // -------------------------------------------------------------------------------------------------
-  if ( RightFrontReading > 20 && LeftFrontReading < 5 ) // 2.5 to 5
+  if ( RightFrontReading > 20 && LeftFrontReading < 5 ) 
   {  // right 
     ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
     ServoLeft.writeMicroseconds(2000 - SPEED);
@@ -308,15 +318,13 @@ void Robot::makeCentre()
     ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
     ServoRight.writeMicroseconds(1000 + SPEED);
     return;    
-  } else if ( RightFrontReading > 20 && (6 < LeftFrontReading && LeftFrontReading < 10))    
-  {
-    // left
+  } else if ( RightFrontReading > 20 && (5 < LeftFrontReading && LeftFrontReading < 10))    
+  {  // left
     ServoLeft.writeMicroseconds(2000 - (SLOW_SPEED));
     ServoRight.writeMicroseconds(1000 + SPEED);
     return;    
-  } else if ( LeftFrontReading > 20 && (6 < RightFrontReading && RightFrontReading < 10))
-  {
-    // right
+  } else if ( LeftFrontReading > 20 && (5 < RightFrontReading && RightFrontReading < 10))      
+  {  // right
     ServoRight.writeMicroseconds(1000 + (SLOW_SPEED));
     ServoLeft.writeMicroseconds(2000 - SPEED);
     return;
@@ -337,13 +345,22 @@ void Robot::makeCentre()
   {
     straight();
   }
-//  delay(5);
 }
 
+
+// ******************************************************* INTERRUPT ***************************************************
 
 void ButtonPressed_EXTI0_Handler (Robot* bot)    // This is a friend function and there ISR for the button press
 {
   buttonInterrupt = false; 
+  static long last_time;
+  if ( (millis() - last_time) < 500 )
+  {
+    Serial.println(millis()-last_time);
+    last_time = millis();
+    return;
+  }
+  
   
   bot->stopBot();
   if ( bot->STATE == Robot::BEFORE_RUN ) 

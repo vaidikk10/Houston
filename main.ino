@@ -73,13 +73,12 @@ void loop()
       break;
     
     case Robot::SEARCHING:
+       robot->readSensors();
+       
        robot->straight();
        robot->makeParallel();
        robot->makeCentre();
-       if (robot->isFinished())
-       {
-        robot->STATE = Robot::FINISHED;
-       }
+       if (robot->isFinished()) robot->STATE = Robot::FINISHED;
       
        if (robot->SensorFront->getReading() < 8) // START CHECKING FOR CORNERS WHEN WITHIN 10CM OF WALL  
        {
@@ -111,7 +110,7 @@ void loop()
     case Robot::AT_CORNER:
       if (robot->CORNER_DIRECTION == Robot::LEFT)
       { 
-        if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT))      // 2 in a row needed. (end infinite loop when parallel)
+        if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::RIGHT))      // 2 in a row needed. (end infinite loop when parallel)
         {
           robot->STATE = Robot::SEARCHING;
           robot->straight();
@@ -126,7 +125,7 @@ void loop()
       }
       else if (robot->CORNER_DIRECTION == Robot::RIGHT)
       {
-        if (robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT))
+        if (robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT))
         {
           robot->STATE = Robot::SEARCHING;
           robot->straight();
