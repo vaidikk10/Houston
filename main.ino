@@ -110,7 +110,7 @@ void loop()
     case Robot::AT_CORNER:
       if (robot->CORNER_DIRECTION == Robot::LEFT)
       { 
-        if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::RIGHT))      // 2 in a row needed. (end infinite loop when parallel)
+        if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT))      // 2 in a row needed. (end infinite loop when parallel)
         {
           robot->STATE = Robot::SEARCHING;
           robot->straight();
