@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef ROBOT
+#define ROBOT
 
 
 #include <Servo.h>
@@ -9,55 +10,64 @@
 class Robot
 {
   private:
-  Run RUN[3];
   Servo ServoLeft, ServoRight;
   
-  
-
-
   public:
-  enum state {START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, AT_DEADEND, REVERSING} STATE;
+  struct LED
+  {
+    bool state;
+    int pin;
+  } RedLED, YellowLED, GreenLED;
+  struct  
+  {
+    Run individualRun[3];
+    int currentRun = 0;
+    int fastestRun = 0;   // fastest run is first (right turn) by default
+  } Runs;
+  enum state {BEFORE_RUN=0, START, SEARCHING, STOP, AT_CORNER, AT_TJUNCTION, FINISHED, AT_DEADEND, REVERSING, LAST_RUN_FINISHED} STATE;
   enum Direction {LEFT = 1, RIGHT} CORNER_DIRECTION;
-  Robot();
-  ~Robot();
-  
+
   Sensor
   *SensorLeftFront,
   *SensorLeftBack,
   *SensorRightFront,
   *SensorRightBack,
-  *SensorFront,
-  *SensorBack;
+  *SensorFront;
 
   double
   LeftFrontReading,
   LeftBackReading,
   RightFrontReading,
   RightBackReading,
-  FrontReading,
-  BackReading;
+  FrontReading;
+
+  Robot();
+  ~Robot();
+  
 
   void startRun();
   void straight();
   void stopBot();
-  int turnLeft();
-  int turnRight();
+  void turnLeft(short);
+  void turnRight(short);
   void reverse();
   void decideToTurn();
   void decideTJunctionTurn();
   void decideDeadEnd();
 
-// ********** MADE THESE PUBLIC! **********
   boolean isDeadEnd();
   boolean isCorner();
   boolean hasEnteredMaze();
   boolean isTJunction();
   boolean isFinished();
-  boolean isParallel();
+  boolean isParallel(enum Direction);
 
   // ********** NEWLY ADDED ********** 
   void makeParallel();
   void makeCentre();
   void readSensors();
- 
+  void LED_flash();
+  friend void ButtonPressed_EXTI0_Handler(Robot*);
 };
+
+#endif

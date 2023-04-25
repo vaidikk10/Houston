@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef RUN
+#define RUN
 
 
 class Run
@@ -18,3 +18,5 @@ class Run
   void stopTimer();
   int calculatePoints();
 };
+
+#endif
