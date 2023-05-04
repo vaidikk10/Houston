@@ -62,6 +62,9 @@ class Robot
   boolean isFinished();
   boolean isParallel(enum Direction);
 
+  void turnRight90(void);
+  void turnLeft90(void);
+
   // ********** NEWLY ADDED ********** 
   void makeParallel();
   void makeCentre();

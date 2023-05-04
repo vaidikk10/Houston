@@ -4,10 +4,10 @@
 
 
 // It is useful to increase the acceptable range if you want to also want to increase the no of consecutive parallel readings to stop turning.
-#define ACCEPTABLE_RANGE 0.75
+#define ACCEPTABLE_RANGE 0.55
 #define SPEED 400          // Pretty much max speed    -- changed to 400 from 100
 #define SLOW_SPEED 460     // changed from 450 to 425 to reduce jankyness
-#define FRONT_STOPPING_DISTANCE 5.5     // 6 to 4.5
+#define FRONT_STOPPING_DISTANCE 7     // 6 to 4.5 to // 5.5 to 6.5 to 6 to 7
 #define TURNING_SPEED 40
 
 //***************************** BUTTON SYSTEMS PINS *****************************
@@ -67,6 +67,30 @@ Robot::~Robot()
   delete SensorRightBack;
   delete SensorFront;
 }
+
+void Robot::turnRight90(void)
+  {
+      if (!ServoLeft.attached() && !ServoRight.attached())
+      {
+        ServoRight.attach(12);
+        ServoLeft.attach(13);
+      }
+      ServoLeft.writeMicroseconds(1500 + 40);
+      ServoRight.writeMicroseconds(1500 + 40);
+      delay(1100);
+  }
+void Robot::turnLeft90(void)
+  {
+      if (!ServoLeft.attached() && !ServoRight.attached())
+      {
+        ServoRight.attach(12);
+        ServoLeft.attach(13);
+      }
+      ServoLeft.writeMicroseconds(1500 - 40);
+      ServoRight.writeMicroseconds(1500 - 40);
+      delay(1100);
+  }
+
 
 void Robot::LED_flash()
 {

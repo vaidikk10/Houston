@@ -78,23 +78,26 @@ void loop()
        robot->straight();
        robot->makeParallel();
        robot->makeCentre();
-       if (robot->isFinished()) robot->STATE = Robot::FINISHED;
+       // if (robot->isFinished()) robot->STATE = Robot::FINISHED;
       
        if (robot->SensorFront->getReading() < 8) // START CHECKING FOR CORNERS WHEN WITHIN 10CM OF WALL  
        {
         if (robot->isCorner() )
         { 
-          robot->STATE = Robot::AT_CORNER; 
+          // robot->STATE = Robot::AT_CORNER; 
           if (robot->CORNER_DIRECTION == Robot::LEFT)
           {
-            robot->turnLeft(TURNING_SPEED);
-            delay(75);
+//            robot->turnLeft(TURNING_SPEED);
+//            delay(75);
+            robot->turnLeft90();
           }
           else if (robot->CORNER_DIRECTION == Robot::RIGHT)
           {
-            robot->turnRight(TURNING_SPEED);
-            delay(75);
+//            robot->turnRight(TURNING_SPEED);
+//            delay(75);
+              robot->turnRight90();
           }
+          robot->STATE = Robot::SEARCHING;
         }
         else if (robot->isTJunction())
         { robot->STATE = Robot::AT_TJUNCTION; }
@@ -113,7 +116,7 @@ void loop()
         if (robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT) && robot->isParallel(Robot::LEFT))      // 2 in a row needed. (end infinite loop when parallel)
         {
           robot->STATE = Robot::SEARCHING;
-          robot->straight();
+          // robot->straight();
         }
         if (robot->RightFrontReading <= robot->RightBackReading)
         {
@@ -128,7 +131,7 @@ void loop()
         if (robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT) && robot->isParallel(Robot::RIGHT))
         {
           robot->STATE = Robot::SEARCHING;
-          robot->straight();
+          // robot->straight();
         }
         if (robot->LeftFrontReading <= robot->LeftBackReading)
         {
@@ -145,31 +148,39 @@ void loop()
       if ( robot->Runs.currentRun == 0 )
       {
         robot->CORNER_DIRECTION = Robot::RIGHT;
-        robot->turnRight(TURNING_SPEED);
+        //robot->turnRight(TURNING_SPEED);
       }else if ( robot->Runs.currentRun == 1 ) 
       {
         robot->CORNER_DIRECTION = Robot::LEFT; 
-        robot->turnLeft(TURNING_SPEED);
+        //robot->turnLeft(TURNING_SPEED);
       } else if ( robot->Runs.currentRun == 2 )
       {
         if ( robot->Runs.fastestRun == 0 ) 
         {
           robot->CORNER_DIRECTION = Robot::RIGHT;
-          robot->turnRight(TURNING_SPEED);
+          //robot->turnRight(TURNING_SPEED);
         }else 
         {
           robot->CORNER_DIRECTION = Robot::LEFT;
-          robot->turnLeft(TURNING_SPEED);
+          //robot->turnLeft(TURNING_SPEED);
         }
       }
-      delay(100);
-      robot->STATE = Robot::AT_CORNER;
+      // delay(100);
+      if(robot->CORNER_DIRECTION == Robot::LEFT)
+      {
+        robot->turnLeft90();
+      }
+      else if (robot->CORNER_DIRECTION == Robot::RIGHT)
+      {
+          robot->turnRight90();
+      }
+  robot->STATE = Robot::SEARCHING;
       break;
       
     case Robot::AT_DEADEND:
       if ( robot->Runs.currentRun == 0 ) {robot->Runs.fastestRun = 1;} // if deadend is reached in first run, second run (left) is correct way
       robot->turnRight(TURNING_SPEED);
-      delay(2250);
+      delay(2450);
       robot->STATE = Robot::SEARCHING;
       break;
 
