@@ -75,9 +75,9 @@ void Robot::turnRight90(void)
         ServoRight.attach(12);
         ServoLeft.attach(13);
       }
-      ServoLeft.writeMicroseconds(1500 + 40);
+      ServoLeft.writeMicroseconds(1500 + 40);    // 40 to 45
       ServoRight.writeMicroseconds(1500 + 40);
-      delay(1100);
+      delay(1150);
   }
 void Robot::turnLeft90(void)
   {
@@ -88,7 +88,7 @@ void Robot::turnLeft90(void)
       }
       ServoLeft.writeMicroseconds(1500 - 40);
       ServoRight.writeMicroseconds(1500 - 40);
-      delay(1100);
+      delay(1150);
   }
 
 

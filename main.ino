@@ -145,42 +145,54 @@ void loop()
 
             
     case Robot::AT_TJUNCTION:
+      // robot->stopBot();
+      // delay(1000);
       if ( robot->Runs.currentRun == 0 )
       {
         robot->CORNER_DIRECTION = Robot::RIGHT;
-        //robot->turnRight(TURNING_SPEED);
+        // robot->turnRight(TURNING_SPEED);
       }else if ( robot->Runs.currentRun == 1 ) 
       {
         robot->CORNER_DIRECTION = Robot::LEFT; 
-        //robot->turnLeft(TURNING_SPEED);
+        // robot->turnLeft(TURNING_SPEED);
       } else if ( robot->Runs.currentRun == 2 )
       {
         if ( robot->Runs.fastestRun == 0 ) 
         {
           robot->CORNER_DIRECTION = Robot::RIGHT;
-          //robot->turnRight(TURNING_SPEED);
+          // robot->turnRight(TURNING_SPEED);
         }else 
         {
           robot->CORNER_DIRECTION = Robot::LEFT;
-          //robot->turnLeft(TURNING_SPEED);
+          // robot->turnLeft(TURNING_SPEED);
         }
       }
       // delay(100);
       if(robot->CORNER_DIRECTION == Robot::LEFT)
       {
-        robot->turnLeft90();
+        robot->turnLeft(TURNING_SPEED);
       }
       else if (robot->CORNER_DIRECTION == Robot::RIGHT)
       {
-          robot->turnRight90();
+          robot->turnRight(TURNING_SPEED);
       }
-  robot->STATE = Robot::SEARCHING;
+      if (robot->isParallel(robot->CORNER_DIRECTION) && robot->isParallel(robot->CORNER_DIRECTION) && robot->isParallel(robot->CORNER_DIRECTION) && robot->isParallel(robot->CORNER_DIRECTION))
+      {
+        robot->STATE = Robot::SEARCHING;
+        robot->straight();
+      }
+      // robot->stopBot();
+      //for (int i = 0; i < 30; i++)
+      //robot->makeCentre();
+      // robot->STATE = Robot::SEARCHING;
       break;
       
     case Robot::AT_DEADEND:
       if ( robot->Runs.currentRun == 0 ) {robot->Runs.fastestRun = 1;} // if deadend is reached in first run, second run (left) is correct way
       robot->turnRight(TURNING_SPEED);
-      delay(2450);
+      delay(2550);
+      for (int i = 0; i < 100; i++)
+      robot->makeCentre();
       robot->STATE = Robot::SEARCHING;
       break;
 
